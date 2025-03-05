@@ -9,8 +9,6 @@ import path from 'node:path'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-console.log('***********', dirname)
-
 export default buildConfig({
 	admin: {
 		importMap: {
@@ -33,4 +31,7 @@ export default buildConfig({
 			token: process.env.BLOB_READ_WRITE_TOKEN || '',
 		}),
 	],
+	typescript: {
+		outputFile: path.resolve(dirname, 'payload-types.ts'),
+	},
 })

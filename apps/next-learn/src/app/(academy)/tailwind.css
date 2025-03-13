@@ -1,0 +1,12 @@
+@theme {
+	--font-sans: var(--font-geist-sans);
+	--font-mono: var(--font-geist-mono);
+
+	--color-vercel-pink: #ff0080;
+	--color-vercel-blue: #0070f3;
+	--color-vercel-cyan: #50e3c2;
+	--color-vercel-orange: #f5a623;
+	--color-vercel-violet: #7928ca;
+}
+
+@content './src/**/*.{js,ts,jsx,tsx,mdx}';

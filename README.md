@@ -1,84 +1,93 @@
-# Turborepo starter
+# Vercel Academy Learning Project
 
-This Turborepo starter is maintained by the Turborepo core team.
+This monorepo contains a collection of Next.js applications and shared packages focused on learning and implementing Vercel's best practices and modern web development techniques.
 
-## Using this example
+## Project Structure
 
-Run the following command:
+### Apps
 
-```sh
-npx create-turbo@latest
+- `apps/next-learn`: The main Next.js application for the Vercel Academy learning project
+  - Features modern Next.js App Router
+  - Integrates with Vercel Postgres using Drizzle ORM
+  - Uses Tailwind CSS v4's new configless approach
+  - Implements Vercel's design system with Geist fonts
+  - Type-safe environment configuration with @t3-oss/env-nextjs
+
+### Packages
+
+- `@repo/ui`: Shared React component library
+- `@repo/eslint-config`: Shared ESLint configurations
+- `@repo/typescript-config`: Shared TypeScript configurations
+
+## Development
+
+This project uses [Turborepo](https://turbo.build/repo) for monorepo management and [pnpm](https://pnpm.io) as the package manager.
+
+### Prerequisites
+
+- Node.js (v18 or later recommended)
+- pnpm
+- PostgreSQL database (or Vercel Postgres)
+
+### Getting Started
+
+1. Install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+2. Set up environment variables:
+
+   ```bash
+   cp apps/next-learn/.env.example apps/next-learn/.env
+   ```
+
+   Then edit `.env` with your database and authentication settings.
+
+3. Start development servers:
+   ```bash
+   pnpm dev
+   ```
+
+### Database Management
+
+The project uses Drizzle ORM with Vercel Postgres. From the `apps/next-learn` directory:
+
+```bash
+# Generate migrations
+pnpm db:generate
+
+# Apply migrations
+pnpm db:migrate
+
+# Launch Drizzle Studio
+pnpm db:studio
 ```
 
-## What's inside?
+## Build
 
-This Turborepo includes the following packages/apps:
+Build all apps and packages:
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
+```bash
 pnpm build
 ```
 
-### Develop
+## Remote Caching
 
-To develop all apps and packages, run the following command:
+This project supports Turborepo's [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) feature. To enable it:
 
-```
-cd my-turborepo
-pnpm dev
-```
+1. [Create a Vercel account](https://vercel.com/signup) if you don't have one
+2. Link your Turborepo:
+   ```bash
+   npx turbo login
+   npx turbo link
+   ```
 
-### Remote Caching
+## Learn More
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Turborepo Documentation](https://turbo.build/repo/docs)
+- [Vercel Documentation](https://vercel.com/docs)
+- [Drizzle ORM Documentation](https://orm.drizzle.team/docs/overview)
+- [Tailwind CSS v4 Documentation](https://tailwindcss.com/docs)

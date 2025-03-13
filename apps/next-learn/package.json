@@ -16,6 +16,8 @@
 		"db:introspect": "dotenv drizzle-kit introspect"
 	},
 	"dependencies": {
+		"@auth/core": "0.37.2",
+		"@auth/drizzle-adapter": "^1.8.0",
 		"@neondatabase/serverless": "^0.10.4",
 		"@t3-oss/env-nextjs": "^0.12.0",
 		"@tailwindcss/postcss": "^4.0.14",
@@ -29,6 +31,7 @@
 		"graphql": "^16.10.0",
 		"gray-matter": "^4.0.3",
 		"next": "15.2.2-canary.1",
+		"next-auth": "5.0.0-beta.25",
 		"pg": "^8.14.0",
 		"postcss": "^8.5.3",
 		"react-dom": "^19.0.0",

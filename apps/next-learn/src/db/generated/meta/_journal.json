@@ -8,6 +8,13 @@
       "when": 1741876197464,
       "tag": "0000_condemned_zombie",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1741883586959,
+      "tag": "0001_aspiring_kang",
+      "breakpoints": true
     }
   ]
 }

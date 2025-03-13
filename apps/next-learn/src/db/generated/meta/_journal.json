@@ -15,6 +15,20 @@
       "when": 1741883586959,
       "tag": "0001_aspiring_kang",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1741885527393,
+      "tag": "0002_graceful_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1741887270667,
+      "tag": "0003_worried_professor_monster",
+      "breakpoints": true
     }
   ]
 }

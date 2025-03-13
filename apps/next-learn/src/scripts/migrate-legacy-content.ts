@@ -70,7 +70,20 @@ async function generateMigrationData(): Promise<MigrationData> {
 		const sectionPath = path.join(LEGACY_CONTENT_PATH, section)
 		const sectionId = ulid()
 		const sectionSlug = createSlug(section)
-		const sectionTitle = createTitle(sectionSlug)
+
+		// Check for index.mdx file to get section metadata
+		const indexPath = path.join(sectionPath, 'index.mdx')
+		let sectionTitle = createTitle(sectionSlug)
+		let sectionDescription = ''
+		let sectionBody = ''
+
+		if (fs.existsSync(indexPath)) {
+			const indexContent = fs.readFileSync(indexPath, 'utf-8')
+			const { data: frontmatter, content } = matter(indexContent)
+			sectionTitle = frontmatter.title || sectionTitle
+			sectionDescription = frontmatter.description || ''
+			sectionBody = content
+		}
 
 		// Create section resource
 		resources.push({
@@ -78,6 +91,8 @@ async function generateMigrationData(): Promise<MigrationData> {
 			type: 'section',
 			fields: {
 				title: sectionTitle,
+				description: sectionDescription,
+				body: sectionBody,
 				slug: sectionSlug,
 			},
 		} as typeof contentResource.$inferInsert)
@@ -92,7 +107,7 @@ async function generateMigrationData(): Promise<MigrationData> {
 		// Process lessons in the section
 		const lessons = fs
 			.readdirSync(sectionPath)
-			.filter((file) => file.endsWith('.mdx'))
+			.filter((file) => file.endsWith('.mdx') && file !== 'index.mdx') // Exclude index.mdx
 			.sort((a, b) => {
 				const posA = getPosition(a)
 				const posB = getPosition(b)

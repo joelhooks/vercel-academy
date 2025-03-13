@@ -8,6 +8,8 @@ import {
 	varchar,
 	text,
 	integer,
+	boolean,
+	serial,
 } from 'drizzle-orm/pg-core'
 import { pgTable } from './pg-table'
 
@@ -35,16 +37,11 @@ export const contentResource = pgTable(
 		id: varchar('id', { length: 255 }).notNull().primaryKey(),
 		type: varchar('type', { length: 255 }).notNull(),
 		fields: jsonb('fields').$type<Record<string, unknown>>().default({}),
-		currentVersionId: varchar('current_version_id', { length: 255 }),
 		createdAt: timestamp('created_at', { mode: 'date' }).defaultNow(),
 		updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow(),
 		deletedAt: timestamp('deleted_at', { mode: 'date' }),
 	},
-	(table) => [
-		index('type_idx').on(table.type),
-		index('created_at_idx').on(table.createdAt),
-		index('current_version_id_idx').on(table.currentVersionId),
-	],
+	(table) => [index('type_idx').on(table.type), index('created_at_idx').on(table.createdAt)],
 )
 
 export const contentResourceResourceRelations = relations(contentResourceResource, ({ one }) => ({
@@ -62,6 +59,7 @@ export const contentResourceResourceRelations = relations(contentResourceResourc
 
 export const contentResourceRelations = relations(contentResource, ({ many }) => ({
 	resources: many(contentResourceResource, { relationName: 'resourceOf' }),
+	progress: many(resourceProgress),
 }))
 
 export type AdapterAccountType = 'oauth' | 'email' | 'credentials'
@@ -101,6 +99,7 @@ export const accounts = pgTable(
 
 export const usersRelations = relations(users, ({ many }) => ({
 	accounts: many(accounts),
+	progress: many(resourceProgress),
 }))
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -122,5 +121,36 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 	user: one(users, {
 		fields: [sessions.userId],
 		references: [users.id],
+	}),
+}))
+
+export const resourceProgress = pgTable(
+	'resource_progress',
+	{
+		id: serial('id').primaryKey(),
+		userId: text('user_id')
+			.notNull()
+			.references(() => users.id),
+		resourceId: varchar('resource_id', { length: 255 })
+			.notNull()
+			.references(() => contentResource.id),
+		isComplete: boolean('is_complete').default(false),
+		progressPercent: doublePrecision('progress_percent').default(0),
+		updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow(),
+	},
+	(table) => [
+		index('rp_user_id_idx').on(table.userId),
+		index('rp_resource_id_idx').on(table.resourceId),
+	],
+)
+
+export const resourceProgressRelations = relations(resourceProgress, ({ one }) => ({
+	user: one(users, {
+		fields: [resourceProgress.userId],
+		references: [users.id],
+	}),
+	resource: one(contentResource, {
+		fields: [resourceProgress.resourceId],
+		references: [contentResource.id],
 	}),
 }))

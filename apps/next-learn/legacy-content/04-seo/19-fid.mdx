@@ -1,0 +1,42 @@
+---
+title: First Input Delay (FID)
+---
+
+The **First Input Delay (FID)** metric is the perception of an
+end user’s experience while interacting with a web page. Imagine clicking
+inside an input box only for nothing to happen – this frustration with the
+interactivity and responsiveness of a site is caused by large input delays.
+
+<Image
+  alt="First Input Delay"
+  src="/learn/pages-router/seo/fid.png"
+  width={1440 / 2}
+  height={960 / 2}
+/>
+
+FID requires real user data and cannot be measured in the lab (e.g. Google Lighthouse). However, the [Total Blocking Time (TBT)](https://web.dev/tbt) metric is lab-measurable and captures issues that affect interactivity.
+
+<Image
+  alt="First Input Delay Example"
+  src="/learn/pages-router/seo/fid-example.png"
+  width={2062 / 2}
+  height={960 / 2}
+  caption="FID happens when the browser’s
+    main thread is performing other tasks and is unable to respond to the user’s
+    request."
+/>
+
+<Quiz
+  question="What does First Input Delay (FID) measure?"
+  answers={[
+    'FID measures the visual stability of a web page.',
+    'FID measures the interactivity of a web page.',
+    'FID measures the loading performance of a web page.',
+  ]}
+  correctAnswer="FID measures the interactivity of a web page."
+/>
+
+### Further Reading
+
+- Google: [First Input Delay Documentation](https://web.dev/fid/)
+- Vercel: [Blog: Core Web Vitals - First Input Delay](https://vercel.com/blog/core-web-vitals#first-input-delay)

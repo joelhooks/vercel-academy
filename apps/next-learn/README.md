@@ -89,6 +89,56 @@ pnpm db:introspect
 
 For PostgreSQL databases, it's recommended to use migrations rather than direct schema pushing to ensure safe, versioned schema changes.
 
+## Authentication
+
+This project uses [NextAuth.js](https://next-auth.js.org/) (v5 Beta) for authentication with the following setup:
+
+- **Authentication Provider**: Vercel OIDC provider for seamless Vercel account integration
+- **Database Adapter**: [@auth/drizzle-adapter](https://authjs.dev/reference/adapter/drizzle) for storing auth data in PostgreSQL
+- **Schema**: Authentication tables include:
+  - `user`: Stores user profile information
+  - `account`: Manages OAuth account connections
+  - `session`: Handles active user sessions
+
+### Authentication Schema
+
+The authentication schema is defined in `src/db/schema.ts` and includes:
+
+```typescript
+// User table with basic profile information
+export const users = pgTable('user', {
+	id: text('id').primaryKey(),
+	name: text('name'),
+	email: text('email').unique(),
+	emailVerified: timestamp('emailVerified'),
+	image: text('image'),
+})
+
+// OAuth account connections
+export const accounts = pgTable('account', {
+	userId: text('userId').notNull(),
+	type: text('type').notNull(),
+	provider: text('provider').notNull(),
+	providerAccountId: text('providerAccountId').notNull(),
+	// ... OAuth specific fields
+})
+
+// Active sessions
+export const sessions = pgTable('session', {
+	sessionToken: text('sessionToken').primaryKey(),
+	userId: text('userId').notNull(),
+	expires: timestamp('expires').notNull(),
+})
+```
+
+### Authentication Setup
+
+The authentication configuration is located in `src/auth/index.ts` and uses:
+
+- Vercel OIDC provider for authentication
+- Drizzle adapter for database integration
+- PKCE (Proof Key for Code Exchange) for enhanced security
+
 ## Learn More
 
 To learn more about the technologies used in this project:

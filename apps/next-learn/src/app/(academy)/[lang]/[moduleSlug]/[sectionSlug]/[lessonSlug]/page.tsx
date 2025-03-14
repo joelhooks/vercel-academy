@@ -1,5 +1,5 @@
 import {
-	getContentResourceById,
+	getContentResourceBySlug,
 	getLessonsBySectionId,
 	getLocalizedField,
 } from '@/lib/content-resources'
@@ -39,18 +39,18 @@ export default async function LessonPage({ params }: LessonPageProps) {
 	const session = await auth()
 	const userId = session?.user?.id
 
-	// Get all resources
-	const moduleResource = await getContentResourceById(moduleSlug)
+	// Get all resources by slug
+	const moduleResource = await getContentResourceBySlug(moduleSlug)
 	if (!moduleResource || moduleResource.type !== 'module') {
 		notFound()
 	}
 
-	const sectionResource = await getContentResourceById(sectionSlug)
+	const sectionResource = await getContentResourceBySlug(sectionSlug)
 	if (!sectionResource || sectionResource.type !== 'section') {
 		notFound()
 	}
 
-	const lessonResource = await getContentResourceById(lessonSlug)
+	const lessonResource = await getContentResourceBySlug(lessonSlug)
 	if (!lessonResource || lessonResource.type !== 'lesson') {
 		notFound()
 	}
@@ -59,7 +59,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
 	const lessons = await getLessonsBySectionId(sectionResource.id)
 
 	// Find current lesson index
-	const currentLessonIndex = lessons.findIndex((lesson) => lesson.id === lessonSlug)
+	const currentLessonIndex = lessons.findIndex((lesson) => lesson.id === lessonResource.id)
 	const prevLesson = currentLessonIndex > 0 ? lessons[currentLessonIndex - 1] : null
 	const nextLesson =
 		currentLessonIndex < lessons.length - 1 ? lessons[currentLessonIndex + 1] : null
@@ -149,11 +149,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
 					<CardContent className="p-6">
 						<div className="prose prose-blue prose-lg max-w-none">
 							<Suspense fallback={<div className="p-4 text-center">Loading lesson content...</div>}>
-								{contentParagraphs.map((paragraph: string) => {
-									// Create a unique key based on content
-									const contentKey = Buffer.from(paragraph.substring(0, 20)).toString('base64')
+								{contentParagraphs.map((paragraph: string, index: number) => {
+									// Create a truly unique key based on index and content hash
+									// This ensures uniqueness even if paragraphs start with the same text
+									const contentHash = Buffer.from(paragraph.substring(0, 20)).toString('base64')
+									const uniqueKey = `paragraph-${index}-${contentHash}`
+
 									return (
-										<p key={contentKey} className="my-4 leading-relaxed">
+										<p key={uniqueKey} className="my-4 leading-relaxed">
 											{paragraph}
 										</p>
 									)
@@ -167,7 +170,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
 				{userId && (
 					<div className="mb-8 flex justify-center">
 						<Suspense fallback={<Button disabled>Loading progress...</Button>}>
-							<LessonCompleteButton lessonId={lessonSlug} />
+							<LessonCompleteButton lessonId={lessonResource.id} />
 						</Suspense>
 					</div>
 				)}
@@ -182,7 +185,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
 							className="flex items-center shadow-sm hover:shadow transition-all"
 							asChild
 						>
-							<Link href={`/${lang}/${moduleSlug}/${sectionSlug}/${prevLesson.id}`}>
+							<Link
+								href={`/${lang}/${moduleSlug}/${sectionSlug}/${getLocalizedField<string>(
+									{ fields: prevLesson.fields || {} },
+									'slug',
+									lang,
+									prevLesson.id,
+								)}`}
+							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									className="size-4 mr-2"
@@ -217,7 +227,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
 							className="flex items-center shadow-sm hover:shadow hover:bg-accent/50 transition-all"
 							asChild
 						>
-							<Link href={`/${lang}/${moduleSlug}/${sectionSlug}/${nextLesson.id}`}>
+							<Link
+								href={`/${lang}/${moduleSlug}/${sectionSlug}/${getLocalizedField<string>(
+									{ fields: nextLesson.fields || {} },
+									'slug',
+									lang,
+									nextLesson.id,
+								)}`}
+							>
 								{getLocalizedField<string>(
 									{ fields: nextLesson.fields || {} },
 									'title',

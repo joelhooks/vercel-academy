@@ -25,6 +25,17 @@ export default async function HomePage({ params }: HomePageProps) {
 
 	const modules = await getModules()
 
+	// Debug logging for modules and their slugs
+	console.log(
+		'Modules fetched:',
+		modules.map((m) => ({
+			id: m.id,
+			type: m.type,
+			slug: m.fields?.slug || 'NO_SLUG',
+			title: m.fields?.title || 'NO_TITLE',
+		})),
+	)
+
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
 			<div className="container max-w-6xl mx-auto py-12 px-4">
@@ -67,6 +78,14 @@ export default async function HomePage({ params }: HomePageProps) {
 							'',
 						)
 
+						// Get module slug from fields, fallback to ID if not available
+						const moduleSlug = getLocalizedField<string>(
+							{ fields: module.fields || {} },
+							'slug',
+							lang,
+							module.id,
+						)
+
 						return (
 							<Card
 								key={module.id}
@@ -89,7 +108,7 @@ export default async function HomePage({ params }: HomePageProps) {
 								</CardContent>
 								<CardFooter className="pt-3 border-t bg-card">
 									<Link
-										href={`/${lang}/${module.id}`}
+										href={`/${lang}/${moduleSlug}`}
 										className="text-primary hover:text-primary/80 font-medium text-sm inline-flex items-center group-hover:underline transition-all"
 									>
 										Start learning

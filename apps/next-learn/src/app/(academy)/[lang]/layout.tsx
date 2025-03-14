@@ -33,7 +33,7 @@ export default async function LangLayout({ children, params }: LangLayoutProps) 
 
 	return (
 		<html lang={lang}>
-			<body>
+			<body suppressHydrationWarning={true}>
 				<div className="flex min-h-screen">
 					{/* Sidebar */}
 					<aside className="w-64 bg-gray-100 border-r p-6">

@@ -1,5 +1,5 @@
 import {
-	getContentResourceById,
+	getContentResourceBySlug,
 	getLessonsBySectionId,
 	getLocalizedField,
 } from '@/lib/content-resources'
@@ -30,12 +30,14 @@ export default async function SectionPage({ params }: SectionPageProps) {
 	const resolvedParams = await Promise.resolve(params)
 	const { lang, moduleSlug, sectionSlug } = resolvedParams
 
-	const moduleResource = await getContentResourceById(moduleSlug)
+	// Get module by slug
+	const moduleResource = await getContentResourceBySlug(moduleSlug)
 	if (!moduleResource || moduleResource.type !== 'module') {
 		notFound()
 	}
 
-	const sectionResource = await getContentResourceById(sectionSlug)
+	// Get section by slug
+	const sectionResource = await getContentResourceBySlug(sectionSlug)
 	if (!sectionResource || sectionResource.type !== 'section') {
 		notFound()
 	}
@@ -111,6 +113,14 @@ export default async function SectionPage({ params }: SectionPageProps) {
 								`Lesson ${index + 1}`,
 							)
 
+							// Get lesson slug from fields, fallback to ID if not available
+							const lessonSlug = getLocalizedField<string>(
+								{ fields: lesson.fields || {} },
+								'slug',
+								lang,
+								lesson.id,
+							)
+
 							return (
 								<Card key={lesson.id} className="hover:shadow-md transition-shadow">
 									<CardContent className="p-4 flex items-center">
@@ -124,7 +134,7 @@ export default async function SectionPage({ params }: SectionPageProps) {
 										</div>
 										<div className="flex-grow">
 											<Link
-												href={`/${lang}/${moduleSlug}/${sectionSlug}/${lesson.id}`}
+												href={`/${lang}/${moduleSlug}/${sectionSlug}/${lessonSlug}`}
 												className="block"
 											>
 												<h3 className="font-medium text-lg hover:text-blue-600 transition-colors">
@@ -134,7 +144,7 @@ export default async function SectionPage({ params }: SectionPageProps) {
 										</div>
 										<div className="flex-shrink-0">
 											<Link
-												href={`/${lang}/${moduleSlug}/${sectionSlug}/${lesson.id}`}
+												href={`/${lang}/${moduleSlug}/${sectionSlug}/${lessonSlug}`}
 												className="text-blue-600 hover:text-blue-800"
 											>
 												<svg

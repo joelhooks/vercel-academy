@@ -2,8 +2,17 @@ import { z } from 'zod'
 
 /**
  * Zod schema for content resource fields
+ * Extends the open-ended record with some common known fields
+ * Made more flexible to handle nullish values
  */
-export const ContentFieldsSchema = z.record(z.unknown())
+export const ContentFieldsSchema = z.record(z.unknown()).and(
+	z.object({
+		slug: z.string().nullish().optional(),
+		title: z.union([z.string(), z.record(z.string()), z.null()]).optional(),
+		description: z.union([z.string(), z.record(z.string()), z.null()]).optional(),
+		content: z.union([z.string(), z.record(z.string()), z.null()]).optional(),
+	}),
+)
 
 /**
  * Zod schema for content resources
@@ -11,7 +20,7 @@ export const ContentFieldsSchema = z.record(z.unknown())
 export const ContentResourceSchema = z.object({
 	id: z.string(),
 	type: z.enum(['module', 'section', 'lesson']),
-	fields: ContentFieldsSchema.optional(),
+	fields: ContentFieldsSchema.nullish().optional(),
 	createdAt: z.date().optional(),
 	updatedAt: z.date().optional(),
 	deletedAt: z.date().nullish(),

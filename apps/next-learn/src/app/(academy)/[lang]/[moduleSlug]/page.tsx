@@ -1,5 +1,5 @@
 import {
-	getContentResourceById,
+	getContentResourceBySlug,
 	getSectionsByModuleId,
 	getLocalizedField,
 } from '@/lib/content-resources'
@@ -26,64 +26,73 @@ interface ModulePageProps {
 }
 
 export default async function ModulePage({ params }: ModulePageProps) {
-	// Await params to resolve before destructuring
-	const resolvedParams = await Promise.resolve(params)
-	const { lang, moduleSlug } = resolvedParams
+	try {
+		// Await params to resolve before destructuring
+		const resolvedParams = await Promise.resolve(params)
+		const { lang, moduleSlug } = resolvedParams
 
-	const moduleResource = await getContentResourceById(moduleSlug)
-	if (!moduleResource || moduleResource.type !== 'module') {
-		notFound()
-	}
+		console.log(
+			`ModulePage: Attempting to fetch module with slug "${moduleSlug}" and lang "${lang}"`,
+		)
 
-	const sections = await getSectionsByModuleId(moduleResource.id)
+		const moduleResource = await getContentResourceBySlug(moduleSlug)
 
-	const title = getLocalizedField<string>(
-		{ fields: moduleResource.fields || {} },
-		'title',
-		lang,
-		'Untitled Module',
-	)
+		console.log(
+			'ModulePage: Fetch result:',
+			moduleResource
+				? {
+						id: moduleResource.id,
+						type: moduleResource.type,
+						fields: moduleResource.fields,
+					}
+				: 'NULL (Not Found)',
+		)
 
-	const description = getLocalizedField<string>(
-		{ fields: moduleResource.fields || {} },
-		'description',
-		lang,
-		'',
-	)
+		// Check if module exists and is of type 'module'
+		if (!moduleResource || moduleResource.type !== 'module') {
+			console.log(
+				`ModulePage: Module not found or invalid type. Found: ${moduleResource?.type || 'null'}`,
+			)
+			return notFound()
+		}
 
-	return (
-		<div className="container mx-auto py-8 px-4">
-			{/* Module header card */}
-			<Card className="mb-8">
-				<CardHeader>
-					<Badge variant="outline" className="w-fit mb-2">
-						Module
-					</Badge>
-					<CardTitle className="text-3xl">{title}</CardTitle>
-					{description && <CardDescription className="text-lg mt-2">{description}</CardDescription>}
-				</CardHeader>
-			</Card>
+		// Fetch sections for this module
+		const sections = await getSectionsByModuleId(moduleResource.id)
+		console.log(`ModulePage: Found ${sections.length} sections for module ${moduleResource.id}`)
 
-			<Separator className="my-8" />
+		// Get localized title and description
+		const title = getLocalizedField<string>(
+			{ fields: moduleResource.fields || {} },
+			'title',
+			lang,
+			`Module ${moduleResource.id}`,
+		)
 
-			{/* Sections */}
-			<div className="space-y-4">
-				<h2 className="text-2xl font-semibold mb-6">Sections</h2>
+		const description = getLocalizedField<string>(
+			{ fields: moduleResource.fields || {} },
+			'description',
+			lang,
+			'',
+		)
 
-				{sections.length === 0 ? (
-					<Card>
-						<CardContent className="p-6">
-							<p className="text-gray-500">No sections available for this module yet.</p>
-						</CardContent>
-					</Card>
-				) : (
-					<div className="grid gap-4 md:grid-cols-2">
-						{sections.map((section) => {
+		console.log('ModulePage: About to render component')
+
+		return (
+			<div className="container max-w-6xl mx-auto py-8 px-4">
+				<div className="mb-8">
+					<h1 className="text-4xl font-bold mb-4">{title}</h1>
+					{description && <p className="text-xl text-muted-foreground mb-6">{description}</p>}
+					<Separator className="my-6" />
+				</div>
+
+				<div className="grid gap-6">
+					{sections.length > 0 ? (
+						sections.map((section) => {
 							const sectionTitle = getLocalizedField<string>(
 								{ fields: section.fields || {} },
 								'title',
 								lang,
-								'Untitled Section',
+								`Section ${section.id}`,
 							)
 
 							const sectionDescription = getLocalizedField<string>(
@@ -93,31 +102,44 @@ export default async function ModulePage({ params }: ModulePageProps) {
 								'',
 							)
 
+							// Get section slug from fields, fallback to ID if not available
+							const sectionSlug = getLocalizedField<string>(
+								{ fields: section.fields || {} },
+								'slug',
+								lang,
+								section.id,
+							)
+
 							return (
-								<Card key={section.id} className="overflow-hidden transition-all hover:shadow-md">
-									<CardHeader className="pb-3">
-										<CardTitle className="text-xl">{sectionTitle}</CardTitle>
-										{sectionDescription && (
-											<CardDescription className="line-clamp-2">
-												{sectionDescription}
-											</CardDescription>
-										)}
+								<Card key={section.id} className="overflow-hidden">
+									<CardHeader>
+										<CardTitle>{sectionTitle}</CardTitle>
+										{sectionDescription && <CardDescription>{sectionDescription}</CardDescription>}
 									</CardHeader>
-									<CardFooter className="pt-3 border-t">
+									<CardContent>
+										<div className="h-2 w-full bg-muted rounded-full mb-4">
+											<div className="h-2 bg-blue-500 rounded-full w-0" />
+										</div>
+										<p className="text-sm text-muted-foreground">Section progress: Not started</p>
+									</CardContent>
+									<CardFooter className="flex justify-between">
+										<Badge variant="outline" className="bg-muted/30">
+											Section
+										</Badge>
 										<Link
-											href={`/${lang}/${moduleSlug}/${section.id}`}
-											className="text-blue-600 hover:text-blue-800 font-medium text-sm inline-flex items-center"
+											href={`/${lang}/${moduleSlug}/${sectionSlug}`}
+											className="text-primary hover:text-primary/80 font-medium text-sm inline-flex items-center hover:underline transition-all"
 										>
-											Begin Section
+											View section
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
-												className="size-4 ml-1"
+												className="size-4 ml-1 transition-transform hover:translate-x-1"
 												fill="none"
 												viewBox="0 0 24 24"
 												stroke="currentColor"
 												aria-hidden="true"
 											>
-												<title>Begin section</title>
+												<title>View section</title>
 												<path
 													strokeLinecap="round"
 													strokeLinejoin="round"
@@ -129,10 +151,27 @@ export default async function ModulePage({ params }: ModulePageProps) {
 									</CardFooter>
 								</Card>
 							)
-						})}
-					</div>
-				)}
+						})
+					) : (
+						<p className="text-center py-8 text-muted-foreground">
+							No sections available for this module yet.
+						</p>
+					)}
+				</div>
 			</div>
-		</div>
-	)
+		)
+	} catch (error) {
+		console.error('ModulePage: Error rendering module page:', error)
+		return (
+			<div className="container max-w-6xl mx-auto py-8 px-4">
+				<h1 className="text-4xl font-bold mb-4">Error Loading Module</h1>
+				<p className="text-red-500">
+					There was an error loading this module. Please try again later.
+				</p>
+				<pre className="mt-4 p-4 bg-gray-100 rounded overflow-auto text-sm">
+					{error instanceof Error ? error.message : String(error)}
+				</pre>
+			</div>
+		)
+	}
 }

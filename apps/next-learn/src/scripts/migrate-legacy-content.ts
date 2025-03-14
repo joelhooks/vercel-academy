@@ -44,11 +44,11 @@ async function generateMigrationData(): Promise<MigrationData> {
 	const resources: ContentResource[] = []
 	const relationships: ContentResourceResource[] = []
 
-	// Create the course
-	const courseId = ulid()
+	// Create the module (previously course)
+	const moduleId = ulid()
 	resources.push({
-		id: courseId,
-		type: 'course',
+		id: moduleId,
+		type: 'module',
 		fields: {
 			title: 'Next.js Foundations',
 			slug: 'nextjs-foundations',
@@ -97,9 +97,9 @@ async function generateMigrationData(): Promise<MigrationData> {
 			},
 		} as typeof contentResource.$inferInsert)
 
-		// Link section to course
+		// Link section to module (previously course)
 		relationships.push({
-			resourceOfId: courseId,
+			resourceOfId: moduleId,
 			resourceId: sectionId,
 			position: sectionPosition++,
 		} as typeof contentResourceResource.$inferInsert)

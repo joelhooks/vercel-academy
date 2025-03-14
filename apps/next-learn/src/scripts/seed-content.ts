@@ -17,6 +17,7 @@ async function seedContentData() {
 						en: 'Learn the fundamentals of Next.js by building a full-stack application',
 						ja: 'フルスタックアプリケーションを構築してNext.jsの基礎を学ぶ',
 					},
+					slug: 'nextjs-foundations',
 				},
 			},
 			{
@@ -28,6 +29,7 @@ async function seedContentData() {
 						en: 'Learn the essentials of React for building user interfaces',
 						ja: 'ユーザーインターフェイスを構築するためのReactの基本を学ぶ',
 					},
+					slug: 'react-essentials',
 				},
 			},
 		])
@@ -40,6 +42,7 @@ async function seedContentData() {
 				type: 'section',
 				fields: {
 					title: { en: 'Getting Started with Next.js', ja: 'Next.js を始める' },
+					slug: 'getting-started',
 				},
 			},
 			{
@@ -47,6 +50,7 @@ async function seedContentData() {
 				type: 'section',
 				fields: {
 					title: { en: 'Routing in Next.js', ja: 'Next.js のルーティング' },
+					slug: 'routing',
 				},
 			},
 			{
@@ -54,6 +58,7 @@ async function seedContentData() {
 				type: 'section',
 				fields: {
 					title: { en: 'React Components', ja: 'React コンポーネント' },
+					slug: 'components',
 				},
 			},
 			{
@@ -61,6 +66,7 @@ async function seedContentData() {
 				type: 'section',
 				fields: {
 					title: { en: 'React Hooks', ja: 'React フック' },
+					slug: 'hooks',
 				},
 			},
 		])
@@ -76,6 +82,7 @@ async function seedContentData() {
 					content: {
 						en: '# Installing Next.js\n\nLearn how to create a new Next.js project...',
 					},
+					slug: 'installation',
 				},
 			},
 			{
@@ -86,6 +93,7 @@ async function seedContentData() {
 					content: {
 						en: '# Project Structure\n\nUnderstanding the Next.js project structure...',
 					},
+					slug: 'project-structure',
 				},
 			},
 			{
@@ -96,6 +104,7 @@ async function seedContentData() {
 					content: {
 						en: '# App Router\n\nExploring the new App Router in Next.js...',
 					},
+					slug: 'app-router',
 				},
 			},
 			{
@@ -106,6 +115,7 @@ async function seedContentData() {
 					content: {
 						en: '# Page Router\n\nUnderstanding the classic Page Router in Next.js...',
 					},
+					slug: 'page-router',
 				},
 			},
 			{
@@ -116,6 +126,7 @@ async function seedContentData() {
 					content: {
 						en: '# Functional Components\n\nCreating React components using functions...',
 					},
+					slug: 'functional-components',
 				},
 			},
 			{
@@ -126,6 +137,7 @@ async function seedContentData() {
 					content: {
 						en: '# Understanding Props\n\nPassing data between React components...',
 					},
+					slug: 'props',
 				},
 			},
 			{
@@ -136,6 +148,7 @@ async function seedContentData() {
 					content: {
 						en: '# useState Hook\n\nManaging state in React components...',
 					},
+					slug: 'usestate',
 				},
 			},
 			{
@@ -146,6 +159,7 @@ async function seedContentData() {
 					content: {
 						en: '# useEffect Hook\n\nPerforming side effects in React components...',
 					},
+					slug: 'useeffect',
 				},
 			},
 		])

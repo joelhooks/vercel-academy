@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
+import { ModuleNavigationProvider } from '@/components/providers/module-navigation-provider'
 
 export async function generateStaticParams() {
 	return generateNewLessonParams()
@@ -61,23 +62,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
 		expectedType: 'lesson',
 	})
 
-	// Get all lessons in this module with their section information
-	const lessonsWithSections = await getLessonsByModuleId(moduleResource.id)
-
-	// Find current lesson index and associated section info
-	const currentLessonIndex = lessonsWithSections.findIndex(
-		(lesson) => lesson.id === lessonResource.id,
-	)
-	const currentLesson = currentLessonIndex >= 0 ? lessonsWithSections[currentLessonIndex] : null
-	const sectionTitle = currentLesson?.sectionTitle || 'Unknown Section'
-
-	// Set up navigation to previous and next lessons across section boundaries
-	const prevLesson = currentLessonIndex > 0 ? lessonsWithSections[currentLessonIndex - 1] : null
-	const nextLesson =
-		currentLessonIndex < lessonsWithSections.length - 1
-			? lessonsWithSections[currentLessonIndex + 1]
-			: null
-
 	// Get localized fields
 	const moduleTitle = getLocalizedContent({
 		resource: moduleResource,
@@ -101,170 +85,72 @@ export default async function LessonPage({ params }: LessonPageProps) {
 			defaultValue: 'No content available for this lesson.',
 		}) || ''
 
-	// Calculate lesson number and progress
-	const lessonNumber = currentLessonIndex + 1
-	const totalLessons = lessonsWithSections.length
-	const progressPercent = (lessonNumber / totalLessons) * 100
-
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-background to-background/80">
-			<div className="container mx-auto py-8 px-4 max-w-4xl">
-				{/* Breadcrumb Navigation with shadcn UI */}
-				<Breadcrumb className="mb-6">
-					<BreadcrumbItem>
-						<BreadcrumbLink
-							href={`/${lang}/${moduleSlug}`}
-							className="text-primary/80 hover:text-primary"
-						>
-							{moduleTitle}
-						</BreadcrumbLink>
-					</BreadcrumbItem>
-					<BreadcrumbSeparator />
-					<BreadcrumbItem>
-						<span className="font-medium">{lessonTitle}</span>
-					</BreadcrumbItem>
-				</Breadcrumb>
+		<div className="container mx-auto py-8 px-4 max-w-4xl">
+			{/* Simple Breadcrumb */}
+			<div className="mb-6 flex items-center text-sm">
+				<Link href={`/${lang}/${moduleSlug}`} className="text-primary hover:underline">
+					{moduleTitle}
+				</Link>
+				<span className="mx-2">/</span>
+				<span className="font-medium text-foreground">{lessonTitle}</span>
+			</div>
 
-				{/* Section Tag */}
-				<div className="mb-4">
-					<Badge variant="outline" className="text-sm">
-						Section: {sectionTitle}
-					</Badge>
+			{/* Lesson title */}
+			<h1 className="text-3xl font-bold mb-6">{lessonTitle}</h1>
+
+			{/* Main content */}
+			<div className="prose dark:prose-invert max-w-none mb-8">
+				<MDXRemote
+					source={lessonContent}
+					components={{
+						Image: MdxImage,
+						InThisChapter: InThisChapter,
+						Quiz: Quiz,
+						Reveal: Reveal,
+						Callout: Callout,
+						Steps: Steps,
+						Step: Step,
+						CodeBlock: CodeBlock,
+						Tabs: Tabs,
+						Card: MdxCard,
+					}}
+				/>
+			</div>
+
+			{/* Completion button for logged in users */}
+			{userId && (
+				<div className="mb-8 flex justify-center">
+					<Suspense fallback={<Button disabled>Loading progress...</Button>}>
+						<LessonCompleteButton lessonId={lessonResource.id} />
+					</Suspense>
 				</div>
+			)}
 
-				{/* Progress indicator */}
-				<div className="mb-8">
-					<div className="flex justify-between text-sm text-muted-foreground mb-2">
-						<span>
-							Lesson {lessonNumber} of {totalLessons}
-						</span>
-						<span>{Math.round(progressPercent)}% Complete</span>
-					</div>
-					<Progress value={progressPercent} className="h-2" />
-				</div>
+			<Separator className="my-6" />
 
-				{/* Main content card with lesson */}
-				<Card className="mb-8 border shadow-md">
-					<CardHeader className="bg-muted/40 border-b">
-						<CardTitle className="text-2xl">{lessonTitle}</CardTitle>
-					</CardHeader>
-					<CardContent className="p-6">
-						<div className="prose dark:prose-invert max-w-none my-8">
-							<MDXRemote
-								source={lessonContent}
-								components={{
-									Image: MdxImage,
-									InThisChapter: InThisChapter,
-									Quiz: Quiz,
-									Reveal: Reveal,
-									Callout: Callout,
-									Steps: Steps,
-									Step: Step,
-									CodeBlock: CodeBlock,
-									Tabs: Tabs,
-									Card: MdxCard,
-								}}
-							/>
-						</div>
-					</CardContent>
-				</Card>
-
-				{/* Completion button for logged in users */}
-				{userId && (
-					<div className="mb-8 flex justify-center">
-						<Suspense fallback={<Button disabled>Loading progress...</Button>}>
-							<LessonCompleteButton lessonId={lessonResource.id} />
-						</Suspense>
-					</div>
-				)}
-
-				{/* Navigation buttons */}
-				<Separator className="my-6" />
-
-				<div className="flex justify-between">
-					{prevLesson ? (
-						<Button
-							variant="outline"
-							className="flex items-center shadow-sm hover:shadow transition-all"
-							asChild
-						>
-							<Link
-								href={`/${lang}/${moduleSlug}/${getLocalizedContent({
-									resource: prevLesson,
-									field: 'slug',
-									lang,
-									defaultValue: prevLesson.id,
-								})}`}
+			{/* Navigation buttons - these will be automatically populated by layout based on the navigation context */}
+			<div className="flex justify-between">
+				<div>
+					<Button variant="outline" asChild>
+						<Link href={`/${lang}/${moduleSlug}`} className="flex items-center">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								className="h-4 w-4 mr-2"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									className="size-4 mr-2"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									aria-hidden="true"
-								>
-									<title>Previous lesson</title>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M15 19l-7-7 7-7"
-									/>
-								</svg>
-								{getLocalizedContent({
-									resource: prevLesson,
-									field: 'title',
-									lang,
-									defaultValue: 'Previous Lesson',
-								})}
-							</Link>
-						</Button>
-					) : (
-						<div />
-					)}
-
-					{nextLesson ? (
-						<Button
-							variant="outline"
-							className="flex items-center shadow-sm hover:shadow hover:bg-accent/50 transition-all"
-							asChild
-						>
-							<Link
-								href={`/${lang}/${moduleSlug}/${getLocalizedContent({
-									resource: nextLesson,
-									field: 'slug',
-									lang,
-									defaultValue: nextLesson.id,
-								})}`}
-							>
-								{getLocalizedContent({
-									resource: nextLesson,
-									field: 'title',
-									lang,
-									defaultValue: 'Next Lesson',
-								})}
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									className="size-4 ml-2"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									aria-hidden="true"
-								>
-									<title>Next lesson</title>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M9 5l7 7-7 7"
-									/>
-								</svg>
-							</Link>
-						</Button>
-					) : (
-						<div />
-					)}
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M10 19l-7-7m0 0l7-7m-7 7h18"
+								/>
+							</svg>
+							Back to module
+						</Link>
+					</Button>
 				</div>
 			</div>
 		</div>

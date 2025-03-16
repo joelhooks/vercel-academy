@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { generateModuleParams } from '@/server/params/static-params'
 import { getValidatedResource, getLocalizedContent, resolveParams } from '@/utils/localization'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import Image from 'next/image'
 import { MdxImage } from '@/components/mdx/mdx-image'
 import { InThisChapter } from '@/components/mdx/in-this-chapter'
 import { Quiz } from '@/components/mdx/quiz'
@@ -14,16 +13,8 @@ import { CodeBlock } from '@/components/mdx/code-block'
 import { Tabs } from '@/components/mdx/tabs'
 import { Card as MdxCard } from '@/components/mdx/card'
 
-// Import shadcn UI components
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+// Import UI components
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 
 export async function generateStaticParams() {
@@ -171,9 +162,9 @@ export default async function ModulePage({ params }: ModulePageProps) {
 													<CardHeader>
 														<CardTitle className="line-clamp-2">{lessonTitle}</CardTitle>
 														{lessonDescription && (
-															<CardDescription className="line-clamp-2">
+															<p className="text-sm text-muted-foreground line-clamp-2 mt-1">
 																{lessonDescription}
-															</CardDescription>
+															</p>
 														)}
 													</CardHeader>
 													<CardContent className="flex-grow">
@@ -182,10 +173,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
 														</div>
 														<p className="text-sm text-muted-foreground">Not started</p>
 													</CardContent>
-													<CardFooter className="flex justify-between pt-2">
-														<Badge variant="outline" className="bg-muted/30">
-															Lesson
-														</Badge>
+													<CardFooter className="flex justify-end pt-2">
 														<Link
 															href={`/${lang}/${moduleSlug}/${lessonSlug}`}
 															className="text-primary hover:text-primary/80 font-medium text-sm inline-flex items-center hover:underline transition-all"
@@ -193,13 +181,11 @@ export default async function ModulePage({ params }: ModulePageProps) {
 															Start lesson
 															<svg
 																xmlns="http://www.w3.org/2000/svg"
-																className="size-4 ml-1 transition-transform hover:translate-x-1"
+																className="h-4 w-4 ml-1 transition-transform hover:translate-x-1"
 																fill="none"
 																viewBox="0 0 24 24"
 																stroke="currentColor"
-																aria-hidden="true"
 															>
-																<title>Start lesson</title>
 																<path
 																	strokeLinecap="round"
 																	strokeLinejoin="round"

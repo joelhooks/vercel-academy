@@ -6,7 +6,7 @@ import { ModuleNavigation } from '@/components/module-navigation'
 import { auth } from '@/auth'
 import { getProgressForModule } from '@/server/progress/user-progress'
 import { notFound } from 'next/navigation'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { SidebarProvider } from '@/components/ui/sidebar'
 
 interface ModuleLayoutProps {
 	children: ReactNode
@@ -18,24 +18,12 @@ interface ModuleLayoutProps {
 
 export default async function ModuleLayout({ children, params }: ModuleLayoutProps) {
 	try {
-		// Await params to resolve before destructuring
-		const resolvedParams = await Promise.resolve(params)
-		const { lang, moduleSlug } = resolvedParams
+		const { lang, moduleSlug } = params
 
-		console.log(`ModuleLayout: Fetching module with slug "${moduleSlug}"`)
-
-		// Get the module resource by slug instead of ID
+		// Get the module resource by slug
 		const moduleResource = await getContentResourceBySlug(moduleSlug)
 
-		console.log(
-			`ModuleLayout: Fetch result:`,
-			moduleResource ? { id: moduleResource.id, type: moduleResource.type } : 'NULL (Not Found)',
-		)
-
 		if (!moduleResource || moduleResource.type !== 'module') {
-			console.log(
-				`ModuleLayout: Module not found or invalid type. Found: ${moduleResource?.type || 'null'}`,
-			)
 			return notFound()
 		}
 
@@ -43,18 +31,15 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 		const session = await auth()
 		const userId = session?.user?.id
 
-		// Use the new function to get complete navigation data (standalone lessons + sections)
+		// Use the function to get complete navigation data
 		const navigationData = await getModuleNavigationData(moduleResource.id)
-		console.log(
-			`ModuleLayout: Retrieved navigation data with ${navigationData.resources.length} resources`,
-		)
 
 		// Get user progress for this module if logged in
 		const moduleProgressLoader = userId
 			? getProgressForModule(userId, moduleResource.id)
 			: Promise.resolve(null)
 
-		// Use the navigation data from our new function
+		// Use the navigation data
 		const moduleNavigationLoader = Promise.resolve({
 			id: moduleResource.id,
 			slug: moduleSlug,
@@ -71,13 +56,10 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 			<SidebarProvider>
 				<ModuleNavigationProvider moduleNavDataLoader={moduleNavigationLoader}>
 					<ModuleProgressProvider moduleProgressLoader={moduleProgressLoader}>
-						{/* Sidebar navigation */}
-						<ModuleNavigation lang={lang} />
-
-						{/* Main content */}
-						<SidebarInset className="p-6 max-w-5xl mx-auto">
-							<Suspense fallback={<div>Loading module content...</div>}>{children}</Suspense>
-						</SidebarInset>
+						<div className="flex h-full">
+							<ModuleNavigation lang={lang} />
+							<main className="flex-1 overflow-y-auto bg-background">{children}</main>
+						</div>
 					</ModuleProgressProvider>
 				</ModuleNavigationProvider>
 			</SidebarProvider>

@@ -1,10 +1,7 @@
-import {
-	getContentResourceBySlug,
-	getSectionsByModuleId,
-	getLocalizedField,
-} from '@/lib/content-resources'
+import { getSectionsByModuleId } from '@/lib/content-resources'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { generateModuleParams } from '@/lib/static-params'
+import { getValidatedResource, getLocalizedContent, resolveParams } from '@/lib/resource-helpers'
 
 // Import shadcn UI components
 import {
@@ -18,6 +15,10 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
+export async function generateStaticParams() {
+	return generateModuleParams()
+}
+
 interface ModulePageProps {
 	params: {
 		lang: string
@@ -27,53 +28,37 @@ interface ModulePageProps {
 
 export default async function ModulePage({ params }: ModulePageProps) {
 	try {
-		// Await params to resolve before destructuring
-		const resolvedParams = await Promise.resolve(params)
-		const { lang, moduleSlug } = resolvedParams
+		// Resolve and destructure params
+		const { lang, moduleSlug } = await resolveParams(params)
 
 		console.log(
 			`ModulePage: Attempting to fetch module with slug "${moduleSlug}" and lang "${lang}"`,
 		)
 
-		const moduleResource = await getContentResourceBySlug(moduleSlug)
-
-		console.log(
-			'ModulePage: Fetch result:',
-			moduleResource
-				? {
-						id: moduleResource.id,
-						type: moduleResource.type,
-						fields: moduleResource.fields,
-					}
-				: 'NULL (Not Found)',
-		)
-
-		// Check if module exists and is of type 'module'
-		if (!moduleResource || moduleResource.type !== 'module') {
-			console.log(
-				`ModulePage: Module not found or invalid type. Found: ${moduleResource?.type || 'null'}`,
-			)
-			return notFound()
-		}
+		// Validate the module resource
+		const moduleResource = await getValidatedResource({
+			slug: moduleSlug,
+			expectedType: 'module',
+		})
 
 		// Fetch sections for this module
 		const sections = await getSectionsByModuleId(moduleResource.id)
 		console.log(`ModulePage: Found ${sections.length} sections for module ${moduleResource.id}`)
 
 		// Get localized title and description
-		const title = getLocalizedField<string>(
-			{ fields: moduleResource.fields || {} },
-			'title',
+		const title = getLocalizedContent({
+			resource: moduleResource,
+			field: 'title',
 			lang,
-			`Module ${moduleResource.id}`,
-		)
+			defaultValue: `Module ${moduleResource.id}`,
+		})
 
-		const description = getLocalizedField<string>(
-			{ fields: moduleResource.fields || {} },
-			'description',
+		const description = getLocalizedContent({
+			resource: moduleResource,
+			field: 'description',
 			lang,
-			'',
-		)
+			defaultValue: '',
+		})
 
 		console.log('ModulePage: About to render component')
 
@@ -88,27 +73,27 @@ export default async function ModulePage({ params }: ModulePageProps) {
 				<div className="grid gap-6">
 					{sections.length > 0 ? (
 						sections.map((section) => {
-							const sectionTitle = getLocalizedField<string>(
-								{ fields: section.fields || {} },
-								'title',
+							const sectionTitle = getLocalizedContent({
+								resource: section,
+								field: 'title',
 								lang,
-								`Section ${section.id}`,
-							)
+								defaultValue: `Section ${section.id}`,
+							})
 
-							const sectionDescription = getLocalizedField<string>(
-								{ fields: section.fields || {} },
-								'description',
+							const sectionDescription = getLocalizedContent({
+								resource: section,
+								field: 'description',
 								lang,
-								'',
-							)
+								defaultValue: '',
+							})
 
 							// Get section slug from fields, fallback to ID if not available
-							const sectionSlug = getLocalizedField<string>(
-								{ fields: section.fields || {} },
-								'slug',
+							const sectionSlug = getLocalizedContent({
+								resource: section,
+								field: 'slug',
 								lang,
-								section.id,
-							)
+								defaultValue: section.id,
+							})
 
 							return (
 								<Card key={section.id} className="overflow-hidden">

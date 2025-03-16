@@ -1,10 +1,7 @@
-import {
-	getContentResourceBySlug,
-	getLessonsBySectionId,
-	getLocalizedField,
-} from '@/lib/content-resources'
+import { getLessonsBySectionId } from '@/lib/content-resources'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { generateSectionParams } from '@/lib/static-params'
+import { getValidatedResource, getLocalizedContent, resolveParams } from '@/lib/resource-helpers'
 
 // Import shadcn UI components
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +14,10 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
+export async function generateStaticParams() {
+	return generateSectionParams()
+}
+
 interface SectionPageProps {
 	params: {
 		lang: string
@@ -26,44 +27,44 @@ interface SectionPageProps {
 }
 
 export default async function SectionPage({ params }: SectionPageProps) {
-	// Await params to resolve before destructuring
-	const resolvedParams = await Promise.resolve(params)
-	const { lang, moduleSlug, sectionSlug } = resolvedParams
+	// Resolve and destructure params
+	const { lang, moduleSlug, sectionSlug } = await resolveParams(params)
 
-	// Get module by slug
-	const moduleResource = await getContentResourceBySlug(moduleSlug)
-	if (!moduleResource || moduleResource.type !== 'module') {
-		notFound()
-	}
+	// Get and validate module and section resources
+	const moduleResource = await getValidatedResource({
+		slug: moduleSlug,
+		expectedType: 'module',
+	})
 
-	// Get section by slug
-	const sectionResource = await getContentResourceBySlug(sectionSlug)
-	if (!sectionResource || sectionResource.type !== 'section') {
-		notFound()
-	}
+	const sectionResource = await getValidatedResource({
+		slug: sectionSlug,
+		expectedType: 'section',
+	})
 
+	// Get lessons for this section
 	const lessons = await getLessonsBySectionId(sectionResource.id)
 
-	const moduleTitle = getLocalizedField<string>(
-		{ fields: moduleResource.fields || {} },
-		'title',
+	// Get localized content
+	const moduleTitle = getLocalizedContent({
+		resource: moduleResource,
+		field: 'title',
 		lang,
-		'Untitled Module',
-	)
+		defaultValue: 'Untitled Module',
+	})
 
-	const sectionTitle = getLocalizedField<string>(
-		{ fields: sectionResource.fields || {} },
-		'title',
+	const sectionTitle = getLocalizedContent({
+		resource: sectionResource,
+		field: 'title',
 		lang,
-		'Untitled Section',
-	)
+		defaultValue: 'Untitled Section',
+	})
 
-	const sectionDescription = getLocalizedField<string>(
-		{ fields: sectionResource.fields || {} },
-		'description',
+	const sectionDescription = getLocalizedContent({
+		resource: sectionResource,
+		field: 'description',
 		lang,
-		'',
-	)
+		defaultValue: '',
+	})
 
 	return (
 		<div className="container mx-auto py-8 px-4">
@@ -106,20 +107,20 @@ export default async function SectionPage({ params }: SectionPageProps) {
 				) : (
 					<div className="space-y-3">
 						{lessons.map((lesson, index) => {
-							const lessonTitle = getLocalizedField<string>(
-								{ fields: lesson.fields || {} },
-								'title',
+							const lessonTitle = getLocalizedContent({
+								resource: lesson,
+								field: 'title',
 								lang,
-								`Lesson ${index + 1}`,
-							)
+								defaultValue: `Lesson ${index + 1}`,
+							})
 
 							// Get lesson slug from fields, fallback to ID if not available
-							const lessonSlug = getLocalizedField<string>(
-								{ fields: lesson.fields || {} },
-								'slug',
+							const lessonSlug = getLocalizedContent({
+								resource: lesson,
+								field: 'slug',
 								lang,
-								lesson.id,
-							)
+								defaultValue: lesson.id,
+							})
 
 							return (
 								<Card key={lesson.id} className="hover:shadow-md transition-shadow">

@@ -8,6 +8,7 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "next lint --max-warnings 0",
+		"test": "vitest run -c vitest.config.ts",
 		"check-types": "tsc --noEmit",
 		"db:push": "dotenv drizzle-kit push",
 		"db:studio": "dotenv drizzle-kit studio",
@@ -78,6 +79,7 @@
 		"drizzle-kit": "^0.30.5",
 		"eslint": "^9.21.0",
 		"tsx": "^4.19.3",
-		"typescript": "5.8.2"
+		"typescript": "5.8.2",
+		"vite-tsconfig-paths": "^5.1.4"
 	}
 }

@@ -1,4 +1,4 @@
-import { ReactNode, Suspense } from 'react'
+import { type ReactNode, Suspense } from 'react'
 import {
 	getContentResourceBySlug,
 	getLessonsBySectionId,
@@ -10,6 +10,7 @@ import { ModuleNavigation } from '@/components/module-navigation'
 import { auth } from '@/auth'
 import { getProgressForModule } from '@/lib/resource-progress'
 import { notFound } from 'next/navigation'
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 
 interface ModuleLayoutProps {
 	children: ReactNode
@@ -56,13 +57,19 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 			return {
 				id: section.id,
 				slug: section.fields?.slug || section.id, // Use slug from fields if available
-				title: section.fields?.title || { en: `Section ${section.id}` },
+				title:
+					typeof section.fields?.title === 'string'
+						? { en: section.fields.title }
+						: section.fields?.title || { en: `Section ${section.id}` },
 				type: 'section' as const,
 				position: 0, // You may need to add position to your schema
 				lessons: lessons.map((lesson, index) => ({
 					id: lesson.id,
 					slug: lesson.fields?.slug || lesson.id, // Use slug from fields if available
-					title: lesson.fields?.title || { en: `Lesson ${index + 1}` },
+					title:
+						typeof lesson.fields?.title === 'string'
+							? { en: lesson.fields.title }
+							: lesson.fields?.title || { en: `Lesson ${index + 1}` },
 					type: 'lesson' as const,
 					position: index,
 				})),
@@ -80,26 +87,27 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 		const moduleNavigationLoader = Promise.resolve({
 			id: moduleResource.id,
 			slug: moduleSlug,
-			title: moduleResource.fields?.title || { en: `Module ${moduleResource.id}` },
+			title:
+				typeof moduleResource.fields?.title === 'string'
+					? { en: moduleResource.fields.title }
+					: moduleResource.fields?.title || { en: `Module ${moduleResource.id}` },
 			resources: sectionWithLessons,
 		})
 
-		console.log(`ModuleLayout: About to render component`)
-
 		return (
-			<div className="flex min-h-screen">
+			<SidebarProvider>
 				<ModuleNavigationProvider moduleNavDataLoader={moduleNavigationLoader}>
 					<ModuleProgressProvider moduleProgressLoader={moduleProgressLoader}>
 						{/* Sidebar navigation */}
 						<ModuleNavigation lang={lang} />
 
 						{/* Main content */}
-						<main className="flex-1 p-6 max-w-5xl mx-auto">
+						<SidebarInset className="p-6 max-w-5xl mx-auto">
 							<Suspense fallback={<div>Loading module content...</div>}>{children}</Suspense>
-						</main>
+						</SidebarInset>
 					</ModuleProgressProvider>
 				</ModuleNavigationProvider>
-			</div>
+			</SidebarProvider>
 		)
 	} catch (error) {
 		console.error('ModuleLayout: Error rendering module layout:', error)

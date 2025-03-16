@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react'
 import { locales } from '@/config/locales'
-import { getModules, getLocalizedField } from '@/lib/content-resources'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 export function generateStaticParams() {
@@ -28,47 +26,10 @@ export default async function LangLayout({ children, params }: LangLayoutProps) 
 		notFound()
 	}
 
-	// Fetch all modules for the sidebar
-	const modules = await getModules()
-
 	return (
-		<html lang={lang}>
-			<body suppressHydrationWarning={true}>
-				<div className="flex min-h-screen">
-					{/* Sidebar */}
-					<aside className="w-64 bg-gray-100 border-r p-6">
-						<div className="mb-8">
-							<Link href={`/${lang}`} className="text-xl font-semibold">
-								Academy
-							</Link>
-						</div>
-
-						<nav className="space-y-1">
-							{modules.map((module) => {
-								const title = getLocalizedField<string>(
-									{ fields: module.fields || {} },
-									'title',
-									lang,
-									`Module ${module.id}`,
-								)
-
-								return (
-									<Link
-										key={module.id}
-										href={`/${lang}/${module.id}`}
-										className="block py-2 px-3 rounded hover:bg-gray-200 transition-colors"
-									>
-										{title}
-									</Link>
-								)
-							})}
-						</nav>
-					</aside>
-
-					{/* Main content */}
-					<main className="flex-1 p-8">{children}</main>
-				</div>
-			</body>
-		</html>
+		<div className="flex min-h-screen">
+			{/* Main content */}
+			<main className="flex-1 p-8">{children}</main>
+		</div>
 	)
 }

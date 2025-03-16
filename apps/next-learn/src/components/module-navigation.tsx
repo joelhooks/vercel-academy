@@ -6,6 +6,60 @@ import { usePathname } from 'next/navigation'
 import { useModuleNavigation } from '@/components/providers/module-navigation-provider'
 import { useModuleProgress } from '@/components/providers/module-progress-provider'
 import { getLocalizedField } from '@/lib/content-resources'
+import {
+	Sidebar,
+	SidebarContent,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuItem,
+	SidebarMenuButton,
+	SidebarMenuSub,
+	SidebarMenuSubButton,
+} from '@/components/ui/sidebar'
+
+// Import the types we need
+interface NavigationLesson {
+	id: string
+	slug: string
+	title: Record<string, string>
+	position: number
+	type: 'lesson'
+}
+
+interface NavigationSection {
+	id: string
+	slug: string
+	title: Record<string, string>
+	position: number
+	type: 'section'
+	lessons: NavigationLesson[]
+}
+
+type NavigationResource = NavigationSection | NavigationLesson
+
+interface ModuleNavigation {
+	id: string
+	slug: string
+	title: Record<string, string>
+	coverImage?: string | null
+	resources: NavigationResource[]
+	isSidebarCollapsed: boolean
+	setIsSidebarCollapsed: (collapsed: boolean) => void
+}
+
+interface CompletedLesson {
+	resourceId: string
+	completedAt: Date
+	userId: string
+}
+
+interface ModuleProgress {
+	completedLessons: CompletedLesson[]
+	nextResource: string | null
+	percentCompleted: number
+	completedLessonsCount: number
+	totalLessonsCount: number
+}
 
 export function ModuleNavigation({ lang }: { lang: string }) {
 	const pathname = usePathname()
@@ -27,52 +81,47 @@ export function ModuleNavigation({ lang }: { lang: string }) {
 	)
 
 	return (
-		<aside
-			className={`module-sidebar bg-white border-r transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-64'}`}
-		>
-			<div className="p-4 border-b flex justify-between items-center">
-				{!isSidebarCollapsed && <h2 className="font-semibold text-lg truncate">{moduleTitle}</h2>}
-				<button
-					onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-					className="p-1 rounded-full hover:bg-gray-100"
-					aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-					type="button"
-				>
-					{isSidebarCollapsed ? (
-						<span className="text-xl">→</span>
-					) : (
-						<span className="text-xl">←</span>
-					)}
-				</button>
-			</div>
+		<Sidebar className="bg-white border-r" collapsible={isSidebarCollapsed ? 'icon' : 'offcanvas'}>
+			<SidebarHeader className="border-b">
+				<div className="flex justify-between items-center px-2">
+					<h2 className="font-semibold text-lg truncate">{moduleTitle}</h2>
+					<button
+						onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+						className="p-1 rounded-full hover:bg-gray-100"
+						aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+						type="button"
+					>
+						{isSidebarCollapsed ? (
+							<span className="text-xl">→</span>
+						) : (
+							<span className="text-xl">←</span>
+						)}
+					</button>
+				</div>
+			</SidebarHeader>
 
-			<nav className="p-2">
-				{resources.map((resource) => {
-					// Render resource based on its type
-					return resource.type === 'lesson'
-						? renderLesson(resource, navigation, moduleProgress, lang, pathname, isSidebarCollapsed)
-						: renderSection(
-								resource,
-								navigation,
-								moduleProgress,
-								lang,
-								pathname,
-								isSidebarCollapsed,
-							)
-				})}
-			</nav>
-		</aside>
+			<SidebarContent>
+				<SidebarMenu>
+					{resources.map((resource) => {
+						if (resource.type === 'lesson') {
+							return renderLesson(resource, navigation, moduleProgress, lang, pathname)
+						}
+
+						return renderSection(resource, navigation, moduleProgress, lang, pathname)
+					})}
+				</SidebarMenu>
+			</SidebarContent>
+		</Sidebar>
 	)
 }
 
 // Helper function to render a lesson item
 function renderLesson(
-	resource: any,
-	navigation: any,
-	moduleProgress: any,
+	resource: NavigationLesson,
+	navigation: ModuleNavigation,
+	moduleProgress: ModuleProgress | null,
 	lang: string,
 	pathname: string,
-	isSidebarCollapsed: boolean,
 ) {
 	const title = getLocalizedField<string>(
 		{ fields: { title: resource.title } },
@@ -82,39 +131,33 @@ function renderLesson(
 	)
 
 	const isComplete = moduleProgress?.completedLessons.some(
-		(lesson: any) => lesson.resourceId === resource.id,
+		(lesson) => lesson.resourceId === resource.id,
 	)
 
 	const href = `/${lang}/${navigation.slug}/${resource.slug}`
 	const isActive = pathname === href
 
 	return (
-		<Link
-			key={resource.id}
-			href={href}
-			className={`block px-3 py-2 rounded mb-1 ${
-				isActive ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100'
-			} ${isComplete ? 'text-green-600' : ''}`}
-		>
-			{!isSidebarCollapsed && (
-				<span className="flex items-center">
-					{isComplete ? '✓ ' : ''}
-					{title}
-				</span>
-			)}
-			{isSidebarCollapsed && <span className="flex justify-center">{isComplete ? '✓' : '•'}</span>}
-		</Link>
+		<SidebarMenuItem key={resource.id}>
+			<SidebarMenuButton asChild isActive={isActive} tooltip={title}>
+				<Link href={href}>
+					<span className={`flex items-center ${isComplete ? 'text-green-600' : ''}`}>
+						{isComplete ? '✓ ' : ''}
+						{title}
+					</span>
+				</Link>
+			</SidebarMenuButton>
+		</SidebarMenuItem>
 	)
 }
 
 // Helper function to render a section with lessons
 function renderSection(
-	resource: any,
-	navigation: any,
-	moduleProgress: any,
+	resource: NavigationSection,
+	navigation: ModuleNavigation,
+	moduleProgress: ModuleProgress | null,
 	lang: string,
 	pathname: string,
-	isSidebarCollapsed: boolean,
 ) {
 	const sectionTitle = getLocalizedField<string>(
 		{ fields: { title: resource.title } },
@@ -124,48 +167,41 @@ function renderSection(
 	)
 
 	return (
-		<div key={resource.id} className="mb-3">
-			{!isSidebarCollapsed && (
-				<div className="px-3 py-1 text-sm font-medium text-gray-500 uppercase tracking-wider">
-					{sectionTitle}
-				</div>
-			)}
+		<SidebarMenuItem key={resource.id} className="mb-3">
+			<div className="px-3 py-1 text-sm font-medium text-gray-500 uppercase tracking-wider">
+				{sectionTitle}
+			</div>
 
-			{resource.lessons.map((lesson: any) => {
-				const lessonTitle = getLocalizedField<string>(
-					{ fields: { title: lesson.title } },
-					'title',
-					lang,
-					`Lesson ${lesson.position + 1}`,
-				)
+			<SidebarMenuSub>
+				{resource.lessons.map((lesson) => {
+					const lessonTitle = getLocalizedField<string>(
+						{ fields: { title: lesson.title } },
+						'title',
+						lang,
+						`Lesson ${lesson.position + 1}`,
+					)
 
-				const isComplete = moduleProgress?.completedLessons.some(
-					(completed: any) => completed.resourceId === lesson.id,
-				)
+					const isComplete = moduleProgress?.completedLessons.some(
+						(completed) => completed.resourceId === lesson.id,
+					)
 
-				const href = `/${lang}/${navigation.slug}/${resource.slug}/${lesson.slug}`
-				const isActive = pathname === href
+					const href = `/${lang}/${navigation.slug}/${resource.slug}/${lesson.slug}`
+					const isActive = pathname === href
 
-				return (
-					<Link
-						key={lesson.id}
-						href={href}
-						className={`block px-3 py-2 rounded mb-1 ${
-							isActive ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100'
-						} ${isComplete ? 'text-green-600' : ''}`}
-					>
-						{!isSidebarCollapsed && (
-							<span className="flex items-center">
-								{isComplete ? '✓ ' : ''}
-								{lessonTitle}
-							</span>
-						)}
-						{isSidebarCollapsed && (
-							<span className="flex justify-center">{isComplete ? '✓' : '•'}</span>
-						)}
-					</Link>
-				)
-			})}
-		</div>
+					return (
+						<SidebarMenuItem key={lesson.id}>
+							<SidebarMenuSubButton asChild isActive={isActive}>
+								<Link href={href}>
+									<span className={`flex items-center ${isComplete ? 'text-green-600' : ''}`}>
+										{isComplete ? '✓ ' : ''}
+										{lessonTitle}
+									</span>
+								</Link>
+							</SidebarMenuSubButton>
+						</SidebarMenuItem>
+					)
+				})}
+			</SidebarMenuSub>
+		</SidebarMenuItem>
 	)
 }

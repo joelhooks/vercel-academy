@@ -1,13 +1,10 @@
-import {
-	getContentResourceBySlug,
-	getLessonsBySectionId,
-	getLocalizedField,
-} from '@/lib/content-resources'
+import { getLessonsBySectionId } from '@/lib/content-resources'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import { auth } from '@/auth'
 import { LessonCompleteButton } from '@/components/lesson-complete-button'
 import { Suspense } from 'react'
+import { generateLessonParams } from '@/lib/static-params'
+import { getValidatedResource, getLocalizedContent, resolveParams } from '@/lib/resource-helpers'
 
 // Import shadcn UI components
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,6 +18,10 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
 
+export async function generateStaticParams() {
+	return generateLessonParams()
+}
+
 interface LessonPageProps {
 	params: {
 		lang: string
@@ -31,29 +32,28 @@ interface LessonPageProps {
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {
-	// Await params to resolve before destructuring
-	const resolvedParams = await Promise.resolve(params)
-	const { lang, moduleSlug, sectionSlug, lessonSlug } = resolvedParams
+	// Resolve and destructure params
+	const { lang, moduleSlug, sectionSlug, lessonSlug } = await resolveParams(params)
 
 	// Get current user if authenticated
 	const session = await auth()
 	const userId = session?.user?.id
 
-	// Get all resources by slug
-	const moduleResource = await getContentResourceBySlug(moduleSlug)
-	if (!moduleResource || moduleResource.type !== 'module') {
-		notFound()
-	}
+	// Get and validate all resources
+	const moduleResource = await getValidatedResource({
+		slug: moduleSlug,
+		expectedType: 'module',
+	})
 
-	const sectionResource = await getContentResourceBySlug(sectionSlug)
-	if (!sectionResource || sectionResource.type !== 'section') {
-		notFound()
-	}
+	const sectionResource = await getValidatedResource({
+		slug: sectionSlug,
+		expectedType: 'section',
+	})
 
-	const lessonResource = await getContentResourceBySlug(lessonSlug)
-	if (!lessonResource || lessonResource.type !== 'lesson') {
-		notFound()
-	}
+	const lessonResource = await getValidatedResource({
+		slug: lessonSlug,
+		expectedType: 'lesson',
+	})
 
 	// Get all lessons in this section for navigation
 	const lessons = await getLessonsBySectionId(sectionResource.id)
@@ -65,34 +65,34 @@ export default async function LessonPage({ params }: LessonPageProps) {
 		currentLessonIndex < lessons.length - 1 ? lessons[currentLessonIndex + 1] : null
 
 	// Get localized fields
-	const moduleTitle = getLocalizedField<string>(
-		{ fields: moduleResource.fields || {} },
-		'title',
+	const moduleTitle = getLocalizedContent({
+		resource: moduleResource,
+		field: 'title',
 		lang,
-		'Untitled Module',
-	)
+		defaultValue: 'Untitled Module',
+	})
 
-	const sectionTitle = getLocalizedField<string>(
-		{ fields: sectionResource.fields || {} },
-		'title',
+	const sectionTitle = getLocalizedContent({
+		resource: sectionResource,
+		field: 'title',
 		lang,
-		'Untitled Section',
-	)
+		defaultValue: 'Untitled Section',
+	})
 
-	const lessonTitle = getLocalizedField<string>(
-		{ fields: lessonResource.fields || {} },
-		'title',
+	const lessonTitle = getLocalizedContent({
+		resource: lessonResource,
+		field: 'title',
 		lang,
-		'Untitled Lesson',
-	)
+		defaultValue: 'Untitled Lesson',
+	})
 
 	const lessonContent =
-		getLocalizedField<string>(
-			{ fields: lessonResource.fields || {} },
-			'body',
+		getLocalizedContent({
+			resource: lessonResource,
+			field: 'body',
 			lang,
-			'No content available for this lesson.',
-		) || ''
+			defaultValue: 'No content available for this lesson.',
+		}) || ''
 
 	// Safely split content into paragraphs
 	const contentParagraphs = lessonContent.split('\n').filter(Boolean)
@@ -186,12 +186,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
 							asChild
 						>
 							<Link
-								href={`/${lang}/${moduleSlug}/${sectionSlug}/${getLocalizedField<string>(
-									{ fields: prevLesson.fields || {} },
-									'slug',
+								href={`/${lang}/${moduleSlug}/${sectionSlug}/${getLocalizedContent({
+									resource: prevLesson,
+									field: 'slug',
 									lang,
-									prevLesson.id,
-								)}`}
+									defaultValue: prevLesson.id,
+								})}`}
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -209,12 +209,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
 										d="M15 19l-7-7 7-7"
 									/>
 								</svg>
-								{getLocalizedField<string>(
-									{ fields: prevLesson.fields || {} },
-									'title',
+								{getLocalizedContent({
+									resource: prevLesson,
+									field: 'title',
 									lang,
-									'Previous Lesson',
-								)}
+									defaultValue: 'Previous Lesson',
+								})}
 							</Link>
 						</Button>
 					) : (
@@ -228,19 +228,19 @@ export default async function LessonPage({ params }: LessonPageProps) {
 							asChild
 						>
 							<Link
-								href={`/${lang}/${moduleSlug}/${sectionSlug}/${getLocalizedField<string>(
-									{ fields: nextLesson.fields || {} },
-									'slug',
+								href={`/${lang}/${moduleSlug}/${sectionSlug}/${getLocalizedContent({
+									resource: nextLesson,
+									field: 'slug',
 									lang,
-									nextLesson.id,
-								)}`}
+									defaultValue: nextLesson.id,
+								})}`}
 							>
-								{getLocalizedField<string>(
-									{ fields: nextLesson.fields || {} },
-									'title',
+								{getLocalizedContent({
+									resource: nextLesson,
+									field: 'title',
 									lang,
-									'Next Lesson',
-								)}
+									defaultValue: 'Next Lesson',
+								})}
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
 									className="size-4 ml-2"

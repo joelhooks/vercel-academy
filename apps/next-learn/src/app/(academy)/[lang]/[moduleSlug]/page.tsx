@@ -102,7 +102,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
 
 					{/* Display the module body content */}
 					{body && (
-						<div className="prose max-w-none my-8">
+						<div className="prose dark:prose-invert max-w-none mb-8">
 							<MDXRemote
 								source={body}
 								components={{

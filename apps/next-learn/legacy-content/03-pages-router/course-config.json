@@ -1,0 +1,291 @@
+{
+	"id": "pages-router",
+	"type": "course",
+	"introduction": "index.mdx",
+	"resources": [
+		{
+			"id": "getting-started",
+			"type": "section",
+			"title": "Getting Started",
+			"resources": [
+				{
+					"id": "01-create-nextjs-app-setup",
+					"type": "lesson",
+					"path": "01-create-nextjs-app-setup.mdx"
+				},
+				{
+					"id": "02-create-nextjs-app-welcome-to-nextjs",
+					"type": "lesson",
+					"path": "02-create-nextjs-app-welcome-to-nextjs.mdx"
+				},
+				{
+					"id": "03-create-nextjs-app-editing-the-page",
+					"type": "lesson",
+					"path": "03-create-nextjs-app-editing-the-page.mdx"
+				}
+			]
+		},
+		{
+			"id": "routing-and-navigation",
+			"type": "section",
+			"title": "Routing and Navigation",
+			"resources": [
+				{
+					"id": "04-navigate-between-pages",
+					"type": "lesson",
+					"path": "04-navigate-between-pages.mdx"
+				},
+				{
+					"id": "05-navigate-between-pages-setup",
+					"type": "lesson",
+					"path": "05-navigate-between-pages-setup.mdx"
+				},
+				{
+					"id": "06-navigate-between-pages-pages-in-nextjs",
+					"type": "lesson",
+					"path": "06-navigate-between-pages-pages-in-nextjs.mdx"
+				},
+				{
+					"id": "07-navigate-between-pages-link-component",
+					"type": "lesson",
+					"path": "07-navigate-between-pages-link-component.mdx"
+				},
+				{
+					"id": "08-navigate-between-pages-client-side",
+					"type": "lesson",
+					"path": "08-navigate-between-pages-client-side.mdx"
+				}
+			]
+		},
+		{
+			"id": "assets-metadata-and-css",
+			"type": "section",
+			"title": "Assets, Metadata, and CSS",
+			"resources": [
+				{
+					"id": "09-assets-metadata-css-layout-component",
+					"type": "lesson",
+					"path": "09-assets-metadata-css-layout-component.mdx"
+				},
+				{
+					"id": "10-assets-metadata-css",
+					"type": "lesson",
+					"path": "10-assets-metadata-css.mdx"
+				},
+				{
+					"id": "11-assets-metadata-css-setup",
+					"type": "lesson",
+					"path": "11-assets-metadata-css-setup.mdx"
+				},
+				{
+					"id": "12-assets-metadata-css-assets",
+					"type": "lesson",
+					"path": "12-assets-metadata-css-assets.mdx"
+				},
+				{
+					"id": "13-assets-metadata-css-metadata",
+					"type": "lesson",
+					"path": "13-assets-metadata-css-metadata.mdx"
+				},
+				{
+					"id": "14-assets-metadata-css-third-party-javascript",
+					"type": "lesson",
+					"path": "14-assets-metadata-css-third-party-javascript.mdx"
+				},
+				{
+					"id": "15-assets-metadata-css-css-styling",
+					"type": "lesson",
+					"path": "15-assets-metadata-css-css-styling.mdx"
+				},
+				{
+					"id": "16-assets-metadata-css-global-styles",
+					"type": "lesson",
+					"path": "16-assets-metadata-css-global-styles.mdx"
+				},
+				{
+					"id": "17-assets-metadata-css-polishing-layout",
+					"type": "lesson",
+					"path": "17-assets-metadata-css-polishing-layout.mdx"
+				},
+				{
+					"id": "18-assets-metadata-css-styling-tips",
+					"type": "lesson",
+					"path": "18-assets-metadata-css-styling-tips.mdx"
+				}
+			]
+		},
+		{
+			"id": "data-fetching",
+			"type": "section",
+			"title": "Data Fetching",
+			"resources": [
+				{
+					"id": "19-data-fetching-blog-data",
+					"type": "lesson",
+					"path": "19-data-fetching-blog-data.mdx"
+				},
+				{
+					"id": "20-data-fetching",
+					"type": "lesson",
+					"path": "20-data-fetching.mdx"
+				},
+				{
+					"id": "21-data-fetching-setup",
+					"type": "lesson",
+					"path": "21-data-fetching-setup.mdx"
+				},
+				{
+					"id": "22-data-fetching-pre-rendering",
+					"type": "lesson",
+					"path": "22-data-fetching-pre-rendering.mdx"
+				},
+				{
+					"id": "23-data-fetching-two-forms",
+					"type": "lesson",
+					"path": "23-data-fetching-two-forms.mdx"
+				},
+				{
+					"id": "24-data-fetching-with-data",
+					"type": "lesson",
+					"path": "24-data-fetching-with-data.mdx"
+				},
+				{
+					"id": "25-data-fetching-implement-getstaticprops",
+					"type": "lesson",
+					"path": "25-data-fetching-implement-getstaticprops.mdx"
+				},
+				{
+					"id": "26-data-fetching-getstaticprops-details",
+					"type": "lesson",
+					"path": "26-data-fetching-getstaticprops-details.mdx"
+				},
+				{
+					"id": "27-data-fetching-request-time",
+					"type": "lesson",
+					"path": "27-data-fetching-request-time.mdx"
+				}
+			]
+		},
+		{
+			"id": "dynamic-routes",
+			"type": "section",
+			"title": "Dynamic Routes",
+			"resources": [
+				{
+					"id": "28-dynamic-routes",
+					"type": "lesson",
+					"path": "28-dynamic-routes.mdx"
+				},
+				{
+					"id": "29-dynamic-routes-setup",
+					"type": "lesson",
+					"path": "29-dynamic-routes-setup.mdx"
+				},
+				{
+					"id": "30-dynamic-routes-page-path-external-data",
+					"type": "lesson",
+					"path": "30-dynamic-routes-page-path-external-data.mdx"
+				},
+				{
+					"id": "31-dynamic-routes-implement-getstaticpaths",
+					"type": "lesson",
+					"path": "31-dynamic-routes-implement-getstaticpaths.mdx"
+				},
+				{
+					"id": "32-dynamic-routes-implement-getstaticprops",
+					"type": "lesson",
+					"path": "32-dynamic-routes-implement-getstaticprops.mdx"
+				},
+				{
+					"id": "33-dynamic-routes-render-markdown",
+					"type": "lesson",
+					"path": "33-dynamic-routes-render-markdown.mdx"
+				},
+				{
+					"id": "34-dynamic-routes-polishing-post-page",
+					"type": "lesson",
+					"path": "34-dynamic-routes-polishing-post-page.mdx"
+				},
+				{
+					"id": "35-dynamic-routes-polishing-index-page",
+					"type": "lesson",
+					"path": "35-dynamic-routes-polishing-index-page.mdx"
+				},
+				{
+					"id": "36-dynamic-routes-dynamic-routes-details",
+					"type": "lesson",
+					"path": "36-dynamic-routes-dynamic-routes-details.mdx"
+				}
+			]
+		},
+		{
+			"id": "api-routes",
+			"type": "section",
+			"title": "API Routes",
+			"resources": [
+				{
+					"id": "37-api-routes",
+					"type": "lesson",
+					"path": "37-api-routes.mdx"
+				},
+				{
+					"id": "38-api-routes-setup",
+					"type": "lesson",
+					"path": "38-api-routes-setup.mdx"
+				},
+				{
+					"id": "39-api-routes-creating-api-routes",
+					"type": "lesson",
+					"path": "39-api-routes-creating-api-routes.mdx"
+				},
+				{
+					"id": "40-api-routes-api-routes-details",
+					"type": "lesson",
+					"path": "40-api-routes-api-routes-details.mdx"
+				}
+			]
+		},
+		{
+			"id": "deployment",
+			"type": "section",
+			"title": "Deployment",
+			"resources": [
+				{
+					"id": "41-deploying-nextjs-app",
+					"type": "lesson",
+					"path": "41-deploying-nextjs-app.mdx"
+				},
+				{
+					"id": "42-deploying-nextjs-app-setup",
+					"type": "lesson",
+					"path": "42-deploying-nextjs-app-setup.mdx"
+				},
+				{
+					"id": "43-deploying-nextjs-app-github",
+					"type": "lesson",
+					"path": "43-deploying-nextjs-app-github.mdx"
+				},
+				{
+					"id": "44-deploying-nextjs-app-deploy",
+					"type": "lesson",
+					"path": "44-deploying-nextjs-app-deploy.mdx"
+				},
+				{
+					"id": "45-deploying-nextjs-app-platform-details",
+					"type": "lesson",
+					"path": "45-deploying-nextjs-app-platform-details.mdx"
+				},
+				{
+					"id": "46-deploying-nextjs-app-other-hosting-options",
+					"type": "lesson",
+					"path": "46-deploying-nextjs-app-other-hosting-options.mdx"
+				}
+			]
+		},
+		{
+			"id": "47-next-steps",
+			"type": "lesson",
+			"path": "47-next-steps.mdx"
+		}
+	]
+}

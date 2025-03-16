@@ -1,0 +1,219 @@
+{
+	"id": "seo",
+	"type": "course",
+	"introduction": "index.mdx",
+	"resources": [
+		{
+			"id": "introduction-to-seo",
+			"type": "section",
+			"title": "Introduction to SEO",
+			"resources": [
+				{
+					"id": "01-importance-of-seo",
+					"type": "lesson",
+					"path": "01-importance-of-seo.mdx"
+				},
+				{
+					"id": "02-search-systems",
+					"type": "lesson",
+					"path": "02-search-systems.mdx"
+				},
+				{
+					"id": "03-webcrawlers",
+					"type": "lesson",
+					"path": "03-webcrawlers.mdx"
+				}
+			]
+		},
+		{
+			"id": "crawling-and-indexing",
+			"type": "section",
+			"title": "Crawling and Indexing",
+			"resources": [
+				{
+					"id": "04-crawling-and-indexing",
+					"type": "lesson",
+					"path": "04-crawling-and-indexing.mdx"
+				},
+				{
+					"id": "05-status-codes",
+					"type": "lesson",
+					"path": "05-status-codes.mdx"
+				},
+				{
+					"id": "06-robots-txt",
+					"type": "lesson",
+					"path": "06-robots-txt.mdx"
+				},
+				{
+					"id": "07-xml-sitemaps",
+					"type": "lesson",
+					"path": "07-xml-sitemaps.mdx"
+				},
+				{
+					"id": "08-metatags",
+					"type": "lesson",
+					"path": "08-metatags.mdx"
+				},
+				{
+					"id": "09-canonical",
+					"type": "lesson",
+					"path": "09-canonical.mdx"
+				}
+			]
+		},
+		{
+			"id": "rendering-and-ranking",
+			"type": "section",
+			"title": "Rendering and Ranking",
+			"resources": [
+				{
+					"id": "10-rendering-and-ranking",
+					"type": "lesson",
+					"path": "10-rendering-and-ranking.mdx"
+				},
+				{
+					"id": "11-rendering-strategies",
+					"type": "lesson",
+					"path": "11-rendering-strategies.mdx"
+				},
+				{
+					"id": "12-amp",
+					"type": "lesson",
+					"path": "12-amp.mdx"
+				},
+				{
+					"id": "13-url-structure",
+					"type": "lesson",
+					"path": "13-url-structure.mdx"
+				},
+				{
+					"id": "14-metadata",
+					"type": "lesson",
+					"path": "14-metadata.mdx"
+				},
+				{
+					"id": "15-on-page-seo",
+					"type": "lesson",
+					"path": "15-on-page-seo.mdx"
+				}
+			]
+		},
+		{
+			"id": "understanding-core-web-vitals",
+			"type": "section",
+			"title": "Understanding Core Web Vitals",
+			"resources": [
+				{
+					"id": "16-web-performance",
+					"type": "lesson",
+					"path": "16-web-performance.mdx"
+				},
+				{
+					"id": "17-vitals-overview",
+					"type": "lesson",
+					"path": "17-vitals-overview.mdx"
+				},
+				{
+					"id": "18-lcp",
+					"type": "lesson",
+					"path": "18-lcp.mdx"
+				},
+				{
+					"id": "19-fid",
+					"type": "lesson",
+					"path": "19-fid.mdx"
+				},
+				{
+					"id": "20-cls",
+					"type": "lesson",
+					"path": "20-cls.mdx"
+				},
+				{
+					"id": "21-seo-impact",
+					"type": "lesson",
+					"path": "21-seo-impact.mdx"
+				}
+			]
+		},
+		{
+			"id": "improving-performance",
+			"type": "section",
+			"title": "Improving Performance",
+			"resources": [
+				{
+					"id": "22-improve",
+					"type": "lesson",
+					"path": "22-improve.mdx"
+				},
+				{
+					"id": "23-lighthouse",
+					"type": "lesson",
+					"path": "23-lighthouse.mdx"
+				},
+				{
+					"id": "24-images",
+					"type": "lesson",
+					"path": "24-images.mdx"
+				},
+				{
+					"id": "25-dynamic-imports",
+					"type": "lesson",
+					"path": "25-dynamic-imports.mdx"
+				},
+				{
+					"id": "26-dynamic-import-components",
+					"type": "lesson",
+					"path": "26-dynamic-import-components.mdx"
+				},
+				{
+					"id": "27-fonts",
+					"type": "lesson",
+					"path": "27-fonts.mdx"
+				},
+				{
+					"id": "28-third-party-scripts",
+					"type": "lesson",
+					"path": "28-third-party-scripts.mdx"
+				}
+			]
+		},
+		{
+			"id": "monitoring-performance",
+			"type": "section",
+			"title": "Monitoring Performance",
+			"resources": [
+				{
+					"id": "29-monitor",
+					"type": "lesson",
+					"path": "29-monitor.mdx"
+				},
+				{
+					"id": "30-nextjs-speed-insights",
+					"type": "lesson",
+					"path": "30-nextjs-speed-insights.mdx"
+				},
+				{
+					"id": "31-custom-reporting",
+					"type": "lesson",
+					"path": "31-custom-reporting.mdx"
+				},
+				{
+					"id": "32-other-tools",
+					"type": "lesson",
+					"path": "32-other-tools.mdx"
+				},
+				{
+					"id": "33-data-studio",
+					"type": "lesson",
+					"path": "33-data-studio.mdx"
+				}
+			]
+		},
+		{
+			"id": "34-next-steps",
+			"type": "lesson",
+			"path": "34-next-steps.mdx"
+		}
+	]
+}

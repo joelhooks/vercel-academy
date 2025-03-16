@@ -1,0 +1,134 @@
+{
+	"id": "dashboard-app",
+	"type": "course",
+	"introduction": "index.mdx",
+	"resources": [
+		{
+			"id": "01-getting-started",
+			"type": "lesson",
+			"path": "01-getting-started.mdx"
+		},
+		{
+			"id": "styling-and-optimization",
+			"type": "section",
+			"title": "Styling and Optimization",
+			"resources": [
+				{
+					"id": "02-css-styling",
+					"type": "lesson",
+					"path": "02-css-styling.mdx"
+				},
+				{
+					"id": "03-optimizing-fonts-images",
+					"type": "lesson",
+					"path": "03-optimizing-fonts-images.mdx"
+				}
+			]
+		},
+		{
+			"id": "routing-and-navigation",
+			"type": "section",
+			"title": "Routing and Navigation",
+			"resources": [
+				{
+					"id": "04-creating-layouts-and-pages",
+					"type": "lesson",
+					"path": "04-creating-layouts-and-pages.mdx"
+				},
+				{
+					"id": "05-navigating-between-pages",
+					"type": "lesson",
+					"path": "05-navigating-between-pages.mdx"
+				}
+			]
+		},
+		{
+			"id": "data-handling",
+			"type": "section",
+			"title": "Data Handling",
+			"resources": [
+				{
+					"id": "06-setting-up-your-database",
+					"type": "lesson",
+					"path": "06-setting-up-your-database.mdx"
+				},
+				{
+					"id": "07-fetching-data",
+					"type": "lesson",
+					"path": "07-fetching-data.mdx"
+				}
+			]
+		},
+		{
+			"id": "advanced-rendering-and-ui",
+			"type": "section",
+			"title": "Advanced Rendering and UI",
+			"resources": [
+				{
+					"id": "08-static-and-dynamic-rendering",
+					"type": "lesson",
+					"path": "08-static-and-dynamic-rendering.mdx"
+				},
+				{
+					"id": "09-streaming",
+					"type": "lesson",
+					"path": "09-streaming.mdx"
+				},
+				{
+					"id": "10-partial-prerendering",
+					"type": "lesson",
+					"path": "10-partial-prerendering.mdx"
+				}
+			]
+		},
+		{
+			"id": "data-manipulation-and-error-handling",
+			"type": "section",
+			"title": "Data Manipulation and Error Handling",
+			"resources": [
+				{
+					"id": "11-adding-search-and-pagination",
+					"type": "lesson",
+					"path": "11-adding-search-and-pagination.mdx"
+				},
+				{
+					"id": "12-mutating-data",
+					"type": "lesson",
+					"path": "12-mutating-data.mdx"
+				},
+				{
+					"id": "13-error-handling",
+					"type": "lesson",
+					"path": "13-error-handling.mdx"
+				}
+			]
+		},
+		{
+			"id": "enhancing-the-application",
+			"type": "section",
+			"title": "Enhancing the Application",
+			"resources": [
+				{
+					"id": "14-improving-accessibility",
+					"type": "lesson",
+					"path": "14-improving-accessibility.mdx"
+				},
+				{
+					"id": "15-adding-authentication",
+					"type": "lesson",
+					"path": "15-adding-authentication.mdx"
+				},
+				{
+					"id": "16-adding-metadata",
+					"type": "lesson",
+					"path": "16-adding-metadata.mdx"
+				}
+			]
+		},
+		{
+			"id": "17-next-steps",
+			"type": "lesson",
+			"path": "17-next-steps.mdx"
+		}
+	]
+}

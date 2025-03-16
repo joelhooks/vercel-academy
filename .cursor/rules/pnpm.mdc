@@ -1,0 +1,7 @@
+---
+description: use pnpm for package management
+globs: *, *.**
+alwaysApply: true
+---
+- use pnpm for package management tasks
+- this is a monorepo so MOST packages should be install directly in their app/package and not the monorepo root

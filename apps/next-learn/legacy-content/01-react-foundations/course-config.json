@@ -1,0 +1,62 @@
+{
+	"id": "react-foundations",
+	"type": "course",
+	"introduction": "index.mdx",
+	"resources": [
+		{
+			"id": "01-what-is-react-and-nextjs",
+			"type": "lesson",
+			"path": "01-what-is-react-and-nextjs.mdx"
+		},
+		{
+			"id": "02-rendering-ui",
+			"type": "lesson",
+			"path": "02-rendering-ui.mdx"
+		},
+		{
+			"id": "03-updating-ui-with-javascript",
+			"type": "lesson",
+			"path": "03-updating-ui-with-javascript.mdx"
+		},
+		{
+			"id": "04-getting-started-with-react",
+			"type": "lesson",
+			"path": "04-getting-started-with-react.mdx"
+		},
+		{
+			"id": "05-building-ui-with-components",
+			"type": "lesson",
+			"path": "05-building-ui-with-components.mdx"
+		},
+		{
+			"id": "06-displaying-data-with-props",
+			"type": "lesson",
+			"path": "06-displaying-data-with-props.mdx"
+		},
+		{
+			"id": "07-updating-state",
+			"type": "lesson",
+			"path": "07-updating-state.mdx"
+		},
+		{
+			"id": "08-from-react-to-nextjs",
+			"type": "lesson",
+			"path": "08-from-react-to-nextjs.mdx"
+		},
+		{
+			"id": "09-installation",
+			"type": "lesson",
+			"path": "09-installation.mdx"
+		},
+		{
+			"id": "10-server-and-client-components",
+			"type": "lesson",
+			"path": "10-server-and-client-components.mdx"
+		},
+		{
+			"id": "11-next-steps",
+			"type": "lesson",
+			"path": "11-next-steps.mdx"
+		}
+	]
+}

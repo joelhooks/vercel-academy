@@ -1,10 +1,20 @@
-import { getLessonsBySectionId } from '@/server/content/resources'
+import { getLessonsByModuleId } from '@/server/content/resources'
 import Link from 'next/link'
 import { auth } from '@/auth'
 import { LessonCompleteButton } from '@/components/lesson-complete-button'
 import { Suspense } from 'react'
-import { generateLessonParams } from '@/server/params/static-params'
+import { generateNewLessonParams } from '@/server/params/static-params'
 import { getValidatedResource, getLocalizedContent, resolveParams } from '@/utils/localization'
+import { MDXRemote } from 'next-mdx-remote/rsc'
+import { MdxImage } from '@/components/mdx/mdx-image'
+import { InThisChapter } from '@/components/mdx/in-this-chapter'
+import { Quiz } from '@/components/mdx/quiz'
+import { Reveal } from '@/components/mdx/reveal'
+import { Callout } from '@/components/mdx/callout'
+import { Steps, Step } from '@/components/mdx/steps'
+import { CodeBlock } from '@/components/mdx/code-block'
+import { Tabs } from '@/components/mdx/tabs'
+import { Card as MdxCard } from '@/components/mdx/card'
 
 // Import shadcn UI components
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,52 +27,56 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
 
 export async function generateStaticParams() {
-	return generateLessonParams()
+	return generateNewLessonParams()
 }
 
 interface LessonPageProps {
 	params: {
 		lang: string
 		moduleSlug: string
-		sectionSlug: string
 		lessonSlug: string
 	}
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {
 	// Resolve and destructure params
-	const { lang, moduleSlug, sectionSlug, lessonSlug } = await resolveParams(params)
+	const { lang, moduleSlug, lessonSlug } = await resolveParams(params)
 
 	// Get current user if authenticated
 	const session = await auth()
 	const userId = session?.user?.id
 
-	// Get and validate all resources
+	// Get and validate module resource
 	const moduleResource = await getValidatedResource({
 		slug: moduleSlug,
 		expectedType: 'module',
 	})
 
-	const sectionResource = await getValidatedResource({
-		slug: sectionSlug,
-		expectedType: 'section',
-	})
-
+	// Get and validate lesson resource
 	const lessonResource = await getValidatedResource({
 		slug: lessonSlug,
 		expectedType: 'lesson',
 	})
 
-	// Get all lessons in this section for navigation
-	const lessons = await getLessonsBySectionId(sectionResource.id)
+	// Get all lessons in this module with their section information
+	const lessonsWithSections = await getLessonsByModuleId(moduleResource.id)
 
-	// Find current lesson index
-	const currentLessonIndex = lessons.findIndex((lesson) => lesson.id === lessonResource.id)
-	const prevLesson = currentLessonIndex > 0 ? lessons[currentLessonIndex - 1] : null
+	// Find current lesson index and associated section info
+	const currentLessonIndex = lessonsWithSections.findIndex(
+		(lesson) => lesson.id === lessonResource.id,
+	)
+	const currentLesson = currentLessonIndex >= 0 ? lessonsWithSections[currentLessonIndex] : null
+	const sectionTitle = currentLesson?.sectionTitle || 'Unknown Section'
+
+	// Set up navigation to previous and next lessons across section boundaries
+	const prevLesson = currentLessonIndex > 0 ? lessonsWithSections[currentLessonIndex - 1] : null
 	const nextLesson =
-		currentLessonIndex < lessons.length - 1 ? lessons[currentLessonIndex + 1] : null
+		currentLessonIndex < lessonsWithSections.length - 1
+			? lessonsWithSections[currentLessonIndex + 1]
+			: null
 
 	// Get localized fields
 	const moduleTitle = getLocalizedContent({
@@ -70,13 +84,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
 		field: 'title',
 		lang,
 		defaultValue: 'Untitled Module',
-	})
-
-	const sectionTitle = getLocalizedContent({
-		resource: sectionResource,
-		field: 'title',
-		lang,
-		defaultValue: 'Untitled Section',
 	})
 
 	const lessonTitle = getLocalizedContent({
@@ -94,12 +101,9 @@ export default async function LessonPage({ params }: LessonPageProps) {
 			defaultValue: 'No content available for this lesson.',
 		}) || ''
 
-	// Safely split content into paragraphs
-	const contentParagraphs = lessonContent.split('\n').filter(Boolean)
-
 	// Calculate lesson number and progress
 	const lessonNumber = currentLessonIndex + 1
-	const totalLessons = lessons.length
+	const totalLessons = lessonsWithSections.length
 	const progressPercent = (lessonNumber / totalLessons) * 100
 
 	return (
@@ -117,18 +121,16 @@ export default async function LessonPage({ params }: LessonPageProps) {
 					</BreadcrumbItem>
 					<BreadcrumbSeparator />
 					<BreadcrumbItem>
-						<BreadcrumbLink
-							href={`/${lang}/${moduleSlug}/${sectionSlug}`}
-							className="text-primary/80 hover:text-primary"
-						>
-							{sectionTitle}
-						</BreadcrumbLink>
-					</BreadcrumbItem>
-					<BreadcrumbSeparator />
-					<BreadcrumbItem>
 						<span className="font-medium">{lessonTitle}</span>
 					</BreadcrumbItem>
 				</Breadcrumb>
+
+				{/* Section Tag */}
+				<div className="mb-4">
+					<Badge variant="outline" className="text-sm">
+						Section: {sectionTitle}
+					</Badge>
+				</div>
 
 				{/* Progress indicator */}
 				<div className="mb-8">
@@ -147,21 +149,22 @@ export default async function LessonPage({ params }: LessonPageProps) {
 						<CardTitle className="text-2xl">{lessonTitle}</CardTitle>
 					</CardHeader>
 					<CardContent className="p-6">
-						<div className="prose prose-blue prose-lg max-w-none">
-							<Suspense fallback={<div className="p-4 text-center">Loading lesson content...</div>}>
-								{contentParagraphs.map((paragraph: string, index: number) => {
-									// Create a truly unique key based on index and content hash
-									// This ensures uniqueness even if paragraphs start with the same text
-									const contentHash = Buffer.from(paragraph.substring(0, 20)).toString('base64')
-									const uniqueKey = `paragraph-${index}-${contentHash}`
-
-									return (
-										<p key={uniqueKey} className="my-4 leading-relaxed">
-											{paragraph}
-										</p>
-									)
-								})}
-							</Suspense>
+						<div className="prose dark:prose-invert max-w-none my-8">
+							<MDXRemote
+								source={lessonContent}
+								components={{
+									Image: MdxImage,
+									InThisChapter: InThisChapter,
+									Quiz: Quiz,
+									Reveal: Reveal,
+									Callout: Callout,
+									Steps: Steps,
+									Step: Step,
+									CodeBlock: CodeBlock,
+									Tabs: Tabs,
+									Card: MdxCard,
+								}}
+							/>
 						</div>
 					</CardContent>
 				</Card>
@@ -186,7 +189,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
 							asChild
 						>
 							<Link
-								href={`/${lang}/${moduleSlug}/${sectionSlug}/${getLocalizedContent({
+								href={`/${lang}/${moduleSlug}/${getLocalizedContent({
 									resource: prevLesson,
 									field: 'slug',
 									lang,
@@ -228,7 +231,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
 							asChild
 						>
 							<Link
-								href={`/${lang}/${moduleSlug}/${sectionSlug}/${getLocalizedContent({
+								href={`/${lang}/${moduleSlug}/${getLocalizedContent({
 									resource: nextLesson,
 									field: 'slug',
 									lang,
@@ -260,31 +263,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
 							</Link>
 						</Button>
 					) : (
-						<Button
-							variant="default"
-							className="flex items-center shadow-sm hover:shadow transition-all"
-							asChild
-						>
-							<Link href={`/${lang}/${moduleSlug}`}>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									className="size-4 mr-2"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-									aria-hidden="true"
-								>
-									<title>Complete module</title>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M5 13l4 4L19 7"
-									/>
-								</svg>
-								Complete Module
-							</Link>
-						</Button>
+						<div />
 					)}
 				</div>
 			</div>

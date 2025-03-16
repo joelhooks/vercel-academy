@@ -1,7 +1,18 @@
-import { getSectionsByModuleId } from '@/server/content/resources'
+import { getLessonsByModuleId } from '@/server/content/resources'
 import Link from 'next/link'
 import { generateModuleParams } from '@/server/params/static-params'
 import { getValidatedResource, getLocalizedContent, resolveParams } from '@/utils/localization'
+import { MDXRemote } from 'next-mdx-remote/rsc'
+import Image from 'next/image'
+import { MdxImage } from '@/components/mdx/mdx-image'
+import { InThisChapter } from '@/components/mdx/in-this-chapter'
+import { Quiz } from '@/components/mdx/quiz'
+import { Reveal } from '@/components/mdx/reveal'
+import { Callout } from '@/components/mdx/callout'
+import { Steps, Step } from '@/components/mdx/steps'
+import { CodeBlock } from '@/components/mdx/code-block'
+import { Tabs } from '@/components/mdx/tabs'
+import { Card as MdxCard } from '@/components/mdx/card'
 
 // Import shadcn UI components
 import {
@@ -41,9 +52,31 @@ export default async function ModulePage({ params }: ModulePageProps) {
 			expectedType: 'module',
 		})
 
-		// Fetch sections for this module
-		const sections = await getSectionsByModuleId(moduleResource.id)
-		console.log(`ModulePage: Found ${sections.length} sections for module ${moduleResource.id}`)
+		// Fetch all lessons for this module grouped by section
+		const lessonsWithSections = await getLessonsByModuleId(moduleResource.id)
+		console.log(
+			`ModulePage: Found ${lessonsWithSections.length} lessons for module ${moduleResource.id}`,
+		)
+
+		// Group lessons by sectionId for display
+		const sectionGroups = lessonsWithSections.reduce<Record<string, typeof lessonsWithSections>>(
+			(groups, lesson) => {
+				const sectionId = lesson.sectionId
+				if (!groups[sectionId]) {
+					groups[sectionId] = []
+				}
+				groups[sectionId].push(lesson)
+				return groups
+			},
+			{},
+		)
+
+		// Sort sections by sectionPosition
+		const sortedSectionIds = Object.keys(sectionGroups).sort((a, b) => {
+			const posA = sectionGroups[a]?.[0]?.sectionPosition || 0
+			const posB = sectionGroups[b]?.[0]?.sectionPosition || 0
+			return posA - posB
+		})
 
 		// Get localized title and description
 		const title = getLocalizedContent({
@@ -60,6 +93,14 @@ export default async function ModulePage({ params }: ModulePageProps) {
 			defaultValue: '',
 		})
 
+		// Get localized body content
+		const body = getLocalizedContent({
+			resource: moduleResource,
+			field: 'body',
+			lang,
+			defaultValue: '',
+		})
+
 		console.log('ModulePage: About to render component')
 
 		return (
@@ -67,79 +108,117 @@ export default async function ModulePage({ params }: ModulePageProps) {
 				<div className="mb-8">
 					<h1 className="text-4xl font-bold mb-4">{title}</h1>
 					{description && <p className="text-xl text-muted-foreground mb-6">{description}</p>}
+
+					{/* Display the module body content */}
+					{body && (
+						<div className="prose max-w-none my-8">
+							<MDXRemote
+								source={body}
+								components={{
+									Image: MdxImage,
+									InThisChapter: InThisChapter,
+									Quiz: Quiz,
+									Reveal: Reveal,
+									Callout: Callout,
+									Steps: Steps,
+									Step: Step,
+									CodeBlock: CodeBlock,
+									Tabs: Tabs,
+									Card: MdxCard,
+								}}
+							/>
+						</div>
+					)}
+
 					<Separator className="my-6" />
 				</div>
 
-				<div className="grid gap-6">
-					{sections.length > 0 ? (
-						sections.map((section) => {
-							const sectionTitle = getLocalizedContent({
-								resource: section,
-								field: 'title',
-								lang,
-								defaultValue: `Section ${section.id}`,
-							})
-
-							const sectionDescription = getLocalizedContent({
-								resource: section,
-								field: 'description',
-								lang,
-								defaultValue: '',
-							})
-
-							// Get section slug from fields, fallback to ID if not available
-							const sectionSlug = getLocalizedContent({
-								resource: section,
-								field: 'slug',
-								lang,
-								defaultValue: section.id,
-							})
+				<div className="grid gap-8">
+					{sortedSectionIds.length > 0 ? (
+						sortedSectionIds.map((sectionId) => {
+							const lessons = sectionGroups[sectionId] || []
+							const sectionTitle = lessons[0]?.sectionTitle || `Section ${sectionId}`
 
 							return (
-								<Card key={section.id} className="overflow-hidden">
-									<CardHeader>
-										<CardTitle>{sectionTitle}</CardTitle>
-										{sectionDescription && <CardDescription>{sectionDescription}</CardDescription>}
-									</CardHeader>
-									<CardContent>
-										<div className="h-2 w-full bg-muted rounded-full mb-4">
-											<div className="h-2 bg-blue-500 rounded-full w-0" />
-										</div>
-										<p className="text-sm text-muted-foreground">Section progress: Not started</p>
-									</CardContent>
-									<CardFooter className="flex justify-between">
-										<Badge variant="outline" className="bg-muted/30">
-											Section
-										</Badge>
-										<Link
-											href={`/${lang}/${moduleSlug}/${sectionSlug}`}
-											className="text-primary hover:text-primary/80 font-medium text-sm inline-flex items-center hover:underline transition-all"
-										>
-											View section
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												className="size-4 ml-1 transition-transform hover:translate-x-1"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke="currentColor"
-												aria-hidden="true"
-											>
-												<title>View section</title>
-												<path
-													strokeLinecap="round"
-													strokeLinejoin="round"
-													strokeWidth={2}
-													d="M14 5l7 7m0 0l-7 7m7-7H3"
-												/>
-											</svg>
-										</Link>
-									</CardFooter>
-								</Card>
+								<div key={sectionId} className="space-y-4">
+									<h2 className="text-2xl font-semibold">{sectionTitle}</h2>
+									<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+										{lessons.map((lesson) => {
+											const lessonTitle = getLocalizedContent({
+												resource: lesson,
+												field: 'title',
+												lang,
+												defaultValue: `Lesson ${lesson.id}`,
+											})
+
+											const lessonDescription = getLocalizedContent({
+												resource: lesson,
+												field: 'description',
+												lang,
+												defaultValue: '',
+											})
+
+											// Get lesson slug from fields, fallback to ID if not available
+											const lessonSlug = getLocalizedContent({
+												resource: lesson,
+												field: 'slug',
+												lang,
+												defaultValue: lesson.id,
+											})
+
+											return (
+												<Card key={lesson.id} className="flex flex-col h-full">
+													<CardHeader>
+														<CardTitle className="line-clamp-2">{lessonTitle}</CardTitle>
+														{lessonDescription && (
+															<CardDescription className="line-clamp-2">
+																{lessonDescription}
+															</CardDescription>
+														)}
+													</CardHeader>
+													<CardContent className="flex-grow">
+														<div className="h-2 w-full bg-muted rounded-full mb-4">
+															<div className="h-2 bg-blue-500 rounded-full w-0" />
+														</div>
+														<p className="text-sm text-muted-foreground">Not started</p>
+													</CardContent>
+													<CardFooter className="flex justify-between pt-2">
+														<Badge variant="outline" className="bg-muted/30">
+															Lesson
+														</Badge>
+														<Link
+															href={`/${lang}/${moduleSlug}/${lessonSlug}`}
+															className="text-primary hover:text-primary/80 font-medium text-sm inline-flex items-center hover:underline transition-all"
+														>
+															Start lesson
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																className="size-4 ml-1 transition-transform hover:translate-x-1"
+																fill="none"
+																viewBox="0 0 24 24"
+																stroke="currentColor"
+																aria-hidden="true"
+															>
+																<title>Start lesson</title>
+																<path
+																	strokeLinecap="round"
+																	strokeLinejoin="round"
+																	strokeWidth={2}
+																	d="M14 5l7 7m0 0l-7 7m7-7H3"
+																/>
+															</svg>
+														</Link>
+													</CardFooter>
+												</Card>
+											)
+										})}
+									</div>
+								</div>
 							)
 						})
 					) : (
 						<p className="text-center py-8 text-muted-foreground">
-							No sections available for this module yet.
+							No lessons available for this module yet.
 						</p>
 					)}
 				</div>

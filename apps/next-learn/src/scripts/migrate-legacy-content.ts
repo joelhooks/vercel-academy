@@ -6,22 +6,16 @@ import chalk from 'chalk'
 
 import { contentResource, contentResourceResource } from '../db/schema'
 import slugify from 'slugify'
-import { ulid } from 'ulid'
+import { guid } from '../utils/guid'
 
 import db from '@/db'
 const LEGACY_CONTENT_PATH = path.join(process.cwd(), 'legacy-content')
 
-// Helper function to create a slug from filename
-function createSlug(filename: string): string {
+// Helper function to create a slug from filename or string
+function createSlug(name: string): string {
 	// Remove numbers and file extension from filename
-	const cleanName = filename.replace(/^\d+-/, '').replace(/\.mdx$/, '')
+	const cleanName = name.replace(/^\d+-/, '').replace(/\.mdx$/, '')
 	return slugify(cleanName, { lower: true })
-}
-
-// Helper function to get position from filename
-function getPosition(filename: string): number {
-	const match = filename.match(/^(\d+)/)
-	return match ? Number.parseInt(match[1] ?? '0', 10) - 1 : 0
 }
 
 // Helper function to create title from slug
@@ -32,6 +26,26 @@ function createTitle(slug: string): string {
 		.join(' ')
 }
 
+// Helper function to generate an ID with the format type_guid
+function generateId(type: 'module' | 'section' | 'lesson'): string {
+	return `${type}_${guid()}`
+}
+
+type CourseConfig = {
+	id: string
+	type: string
+	introduction: string
+	resources: Array<ResourceConfig>
+}
+
+type ResourceConfig = {
+	id: string
+	type: string
+	path?: string
+	title?: string
+	resources?: Array<ResourceConfig>
+}
+
 type ContentResource = typeof contentResource.$inferInsert
 type ContentResourceResource = typeof contentResourceResource.$inferInsert
 
@@ -40,105 +54,158 @@ interface MigrationData {
 	relationships: ContentResourceResource[]
 }
 
+// Function to read MDX file content
+function readMdxFile(filePath: string): { title: string; description: string; body: string } {
+	if (!fs.existsSync(filePath)) {
+		return { title: '', description: '', body: '' }
+	}
+
+	const fileContent = fs.readFileSync(filePath, 'utf-8')
+	const { data: frontmatter, content } = matter(fileContent)
+
+	return {
+		title: frontmatter.title || '',
+		description: frontmatter.description || '',
+		body: content,
+	}
+}
+
 async function generateMigrationData(): Promise<MigrationData> {
 	const resources: ContentResource[] = []
 	const relationships: ContentResourceResource[] = []
 
-	// Create the module (previously course)
-	const moduleId = ulid()
-	resources.push({
-		id: moduleId,
-		type: 'module',
-		fields: {
-			title: 'Next.js Foundations',
-			slug: 'nextjs-foundations',
-		},
-	} as typeof contentResource.$inferInsert)
-
-	// Read all section directories
-	const sections = fs
+	// Read all course directories
+	const courseDirectories = fs
 		.readdirSync(LEGACY_CONTENT_PATH)
 		.filter((item) => fs.statSync(path.join(LEGACY_CONTENT_PATH, item)).isDirectory())
-		.sort((a, b) => {
-			const posA = getPosition(a)
-			const posB = getPosition(b)
-			return posA - posB
-		})
 
-	let sectionPosition = 0
-	for (const section of sections) {
-		const sectionPath = path.join(LEGACY_CONTENT_PATH, section)
-		const sectionId = ulid()
-		const sectionSlug = createSlug(section)
+	for (const courseDir of courseDirectories) {
+		const coursePath = path.join(LEGACY_CONTENT_PATH, courseDir)
+		const configPath = path.join(coursePath, 'course-config.json')
 
-		// Check for index.mdx file to get section metadata
-		const indexPath = path.join(sectionPath, 'index.mdx')
-		let sectionTitle = createTitle(sectionSlug)
-		let sectionDescription = ''
-		let sectionBody = ''
-
-		if (fs.existsSync(indexPath)) {
-			const indexContent = fs.readFileSync(indexPath, 'utf-8')
-			const { data: frontmatter, content } = matter(indexContent)
-			sectionTitle = frontmatter.title || sectionTitle
-			sectionDescription = frontmatter.description || ''
-			sectionBody = content
+		// Skip if no config file exists
+		if (!fs.existsSync(configPath)) {
+			console.warn(chalk.yellow(`No course config found for ${courseDir}, skipping...`))
+			continue
 		}
 
-		// Create section resource
+		// Parse the course config
+		const courseConfig: CourseConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+
+		// Read the introduction file to get course metadata
+		const introPath = path.join(coursePath, courseConfig.introduction)
+		const {
+			title: courseTitle,
+			description: courseDescription,
+			body: courseBody,
+		} = readMdxFile(introPath)
+
+		// Create the module (formerly course)
+		const moduleId = generateId('module')
+		const moduleSlug = createSlug(courseConfig.id)
+
 		resources.push({
-			id: sectionId,
-			type: 'section',
+			id: moduleId,
+			type: 'module',
 			fields: {
-				title: sectionTitle,
-				description: sectionDescription,
-				body: sectionBody,
-				slug: sectionSlug,
+				title: courseTitle || createTitle(moduleSlug),
+				description: courseDescription,
+				body: courseBody,
+				slug: moduleSlug,
 			},
-		} as typeof contentResource.$inferInsert)
+		})
 
-		// Link section to module (previously course)
-		relationships.push({
-			resourceOfId: moduleId,
-			resourceId: sectionId,
-			position: sectionPosition++,
-		} as typeof contentResourceResource.$inferInsert)
+		// Process the resources in the config
+		let resourcePosition = 0
 
-		// Process lessons in the section
-		const lessons = fs
-			.readdirSync(sectionPath)
-			.filter((file) => file.endsWith('.mdx') && file !== 'index.mdx') // Exclude index.mdx
-			.sort((a, b) => {
-				const posA = getPosition(a)
-				const posB = getPosition(b)
-				return posA - posB
-			})
+		// Process top-level resources in the config
+		for (const resource of courseConfig.resources) {
+			if (resource.type === 'section') {
+				// Process section
+				const sectionId = generateId('section')
+				const sectionSlug = createSlug(resource.id)
+				const sectionTitle = resource.title || createTitle(sectionSlug)
 
-		let lessonPosition = 0
-		for (const lesson of lessons) {
-			const lessonPath = path.join(sectionPath, lesson)
-			const lessonContent = fs.readFileSync(lessonPath, 'utf-8')
-			const { data: frontmatter, content } = matter(lessonContent)
-			const lessonId = ulid()
-			const lessonSlug = createSlug(lesson)
+				resources.push({
+					id: sectionId,
+					type: 'section',
+					fields: {
+						title: sectionTitle,
+						slug: sectionSlug,
+					},
+				})
 
-			// Create lesson resource
-			resources.push({
-				id: lessonId,
-				type: 'lesson',
-				fields: {
-					...frontmatter,
-					body: content,
-					slug: lessonSlug,
-				},
-			} as typeof contentResource.$inferInsert)
+				// Link section to module
+				relationships.push({
+					resourceOfId: moduleId,
+					resourceId: sectionId,
+					position: resourcePosition++,
+				})
 
-			// Link lesson to section
-			relationships.push({
-				resourceOfId: sectionId,
-				resourceId: lessonId,
-				position: lessonPosition++,
-			} as typeof contentResourceResource.$inferInsert)
+				// Process lessons in the section
+				if (resource.resources && resource.resources.length > 0) {
+					let lessonPosition = 0
+
+					for (const lesson of resource.resources) {
+						if (lesson.type === 'lesson' && lesson.path) {
+							const lessonId = generateId('lesson')
+							const lessonPath = path.join(coursePath, lesson.path)
+							const {
+								title: lessonTitle,
+								description: lessonDescription,
+								body: lessonBody,
+							} = readMdxFile(lessonPath)
+							const lessonSlug = createSlug(lesson.id)
+
+							resources.push({
+								id: lessonId,
+								type: 'lesson',
+								fields: {
+									title: lessonTitle || createTitle(lessonSlug),
+									description: lessonDescription,
+									body: lessonBody,
+									slug: lessonSlug,
+								},
+							})
+
+							// Link lesson to section
+							relationships.push({
+								resourceOfId: sectionId,
+								resourceId: lessonId,
+								position: lessonPosition++,
+							})
+						}
+					}
+				}
+			} else if (resource.type === 'lesson' && resource.path) {
+				// Process top-level lesson
+				const lessonId = generateId('lesson')
+				const lessonPath = path.join(coursePath, resource.path)
+				const {
+					title: lessonTitle,
+					description: lessonDescription,
+					body: lessonBody,
+				} = readMdxFile(lessonPath)
+				const lessonSlug = createSlug(resource.id)
+
+				resources.push({
+					id: lessonId,
+					type: 'lesson',
+					fields: {
+						title: lessonTitle || createTitle(lessonSlug),
+						description: lessonDescription,
+						body: lessonBody,
+						slug: lessonSlug,
+					},
+				})
+
+				// Link lesson directly to module
+				relationships.push({
+					resourceOfId: moduleId,
+					resourceId: lessonId,
+					position: resourcePosition++,
+				})
+			}
 		}
 	}
 

@@ -1,6 +1,7 @@
 import { withPayload } from '@payloadcms/next/withPayload'
 
 const nextConfig = {
+	transpilePackages: ['next-mdx-remote'],
 	experimental: {
 		ppr: 'incremental',
 	},

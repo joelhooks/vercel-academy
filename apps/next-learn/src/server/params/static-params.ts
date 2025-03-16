@@ -2,6 +2,7 @@ import {
 	getModules,
 	getSectionsByModuleId,
 	getLessonsBySectionId,
+	getLessonsByModuleId,
 } from '@/server/content/resources'
 import { locales } from '@/config/locales'
 
@@ -85,6 +86,35 @@ export async function generateLessonParams() {
 						lessonSlug: lessonResource.fields.slug,
 					})
 				}
+			}
+		}
+	}
+
+	return params
+}
+
+/**
+ * Generates static parameters for lesson pages with the new URL structure (without sectionSlug)
+ * @returns Array of { lang, moduleSlug, lessonSlug } combinations
+ */
+export async function generateNewLessonParams() {
+	const modules = await getModules()
+	const params = []
+
+	for (const moduleResource of modules) {
+		if (!moduleResource.fields?.slug) continue
+
+		const lessonsWithSections = await getLessonsByModuleId(moduleResource.id)
+
+		for (const lessonResource of lessonsWithSections) {
+			if (!lessonResource.fields?.slug) continue
+
+			for (const locale of locales) {
+				params.push({
+					lang: locale,
+					moduleSlug: moduleResource.fields.slug,
+					lessonSlug: lessonResource.fields.slug,
+				})
 			}
 		}
 	}

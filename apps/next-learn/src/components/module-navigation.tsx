@@ -66,6 +66,41 @@ export function ModuleNavigation({ lang }: { lang: string }) {
 	const navigation = useModuleNavigation()
 	const { moduleProgress } = useModuleProgress()
 
+	// Add debugging for the entire navigation object
+	React.useEffect(() => {
+		if (navigation) {
+			console.log('==== NAVIGATION DEBUG ====')
+			console.log('Module ID:', navigation.id)
+			console.log('Module Slug:', navigation.slug)
+			console.log('Resource count:', navigation.resources.length)
+			console.log('Resources breakdown:')
+
+			const sections = navigation.resources.filter((r) => r.type === 'section')
+			const lessons = navigation.resources.filter((r) => r.type === 'lesson')
+
+			console.log(`- Sections: ${sections.length}`)
+			console.log(`- Standalone lessons: ${lessons.length}`)
+
+			console.log('Resource types in order:')
+			navigation.resources.forEach((resource, index) => {
+				console.log(
+					`${index}: ${resource.type} (position: ${resource.position}, id: ${resource.id}, slug: ${resource.slug})`,
+				)
+				if (resource.type === 'section') {
+					console.log(`   Section has ${(resource as NavigationSection).lessons.length} lessons`)
+					console.log(
+						`   Section lessons:`,
+						(resource as NavigationSection).lessons.map(
+							(l) => `${l.id} (${l.slug}) - position: ${l.position}`,
+						),
+					)
+				}
+			})
+		} else {
+			console.log('No navigation data available')
+		}
+	}, [navigation])
+
 	if (!navigation) {
 		return null
 	}
@@ -83,6 +118,12 @@ export function ModuleNavigation({ lang }: { lang: string }) {
 		lang: lang,
 		defaultValue: 'Module',
 	})
+
+	// Explicitly log the resources being mapped
+	console.log(
+		'Rendering resources in navigation:',
+		resources.map((r) => ({ type: r.type, id: r.id, slug: r.slug })),
+	)
 
 	return (
 		<Sidebar className="bg-white border-r" collapsible={isSidebarCollapsed ? 'icon' : 'offcanvas'}>
@@ -106,12 +147,28 @@ export function ModuleNavigation({ lang }: { lang: string }) {
 
 			<SidebarContent>
 				<SidebarMenu>
-					{resources.map((resource) => {
+					{resources.map((resource, index) => {
+						console.log(`Rendering resource ${index}:`, resource.type, resource.id)
+
 						if (resource.type === 'lesson') {
+							console.log('Rendering standalone lesson:', resource.id, resource.slug)
 							return renderLesson(resource, navigation, moduleProgress, lang, pathname)
 						}
 
-						return renderSection(resource, navigation, moduleProgress, lang, pathname)
+						console.log(
+							'Rendering section:',
+							resource.id,
+							'with',
+							(resource as NavigationSection).lessons?.length || 0,
+							'lessons',
+						)
+						return renderSection(
+							resource as NavigationSection,
+							navigation,
+							moduleProgress,
+							lang,
+							pathname,
+						)
 					})}
 				</SidebarMenu>
 			</SidebarContent>
@@ -127,11 +184,17 @@ function renderLesson(
 	lang: string,
 	pathname: string,
 ) {
+	console.log('renderLesson called for:', resource.id, resource.slug)
+
+	// Ensure title is properly formatted for getLocalizedContent
+	const titleForLocalization =
+		typeof resource.title === 'string' ? { en: resource.title } : resource.title
+
 	const title = getLocalizedContent<string>({
 		resource: {
 			id: resource.id,
 			type: resource.type,
-			fields: { title: resource.title },
+			fields: { title: titleForLocalization },
 		},
 		field: 'title',
 		lang: lang,
@@ -142,8 +205,11 @@ function renderLesson(
 		(lesson) => lesson.resourceId === resource.id,
 	)
 
+	// Use the new URL structure without section slug
 	const href = `/${lang}/${navigation.slug}/${resource.slug}`
 	const isActive = pathname === href
+
+	console.log(`Lesson ${resource.id} href:`, href, 'active:', isActive)
 
 	return (
 		<SidebarMenuItem key={resource.id}>
@@ -167,11 +233,22 @@ function renderSection(
 	lang: string,
 	pathname: string,
 ) {
+	console.log(
+		'renderSection called for:',
+		resource.id,
+		'with lessons:',
+		resource.lessons?.length || 0,
+	)
+
+	// Ensure title is properly formatted for getLocalizedContent
+	const titleForLocalization =
+		typeof resource.title === 'string' ? { en: resource.title } : resource.title
+
 	const sectionTitle = getLocalizedContent<string>({
 		resource: {
 			id: resource.id,
 			type: resource.type,
-			fields: { title: resource.title },
+			fields: { title: titleForLocalization },
 		},
 		field: 'title',
 		lang: lang,
@@ -185,7 +262,9 @@ function renderSection(
 			</div>
 
 			<SidebarMenuSub>
-				{resource.lessons.map((lesson) => {
+				{(resource.lessons || []).map((lesson) => {
+					console.log('Rendering section lesson:', lesson.id, lesson.slug)
+
 					const lessonTitle = getLocalizedContent<string>({
 						resource: {
 							id: lesson.id,
@@ -201,7 +280,8 @@ function renderSection(
 						(completed) => completed.resourceId === lesson.id,
 					)
 
-					const href = `/${lang}/${navigation.slug}/${resource.slug}/${lesson.slug}`
+					// Use the new URL structure without section slug
+					const href = `/${lang}/${navigation.slug}/${lesson.slug}`
 					const isActive = pathname === href
 
 					return (

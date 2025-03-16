@@ -1,9 +1,5 @@
 import { type ReactNode, Suspense } from 'react'
-import {
-	getContentResourceBySlug,
-	getLessonsBySectionId,
-	getSectionsByModuleId,
-} from '@/server/content/resources'
+import { getContentResourceBySlug, getModuleNavigationData } from '@/server/content/resources'
 import { ModuleProgressProvider } from '@/components/providers/module-progress-provider'
 import { ModuleNavigationProvider } from '@/components/providers/module-navigation-provider'
 import { ModuleNavigation } from '@/components/module-navigation'
@@ -47,51 +43,28 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 		const session = await auth()
 		const userId = session?.user?.id
 
-		// Get module navigation data
-		const sections = await getSectionsByModuleId(moduleResource.id)
-		console.log(`ModuleLayout: Found ${sections.length} sections for module ${moduleResource.id}`)
-
-		// Prepare module sections with lessons
-		const sectionPromises = sections.map(async (section) => {
-			const lessons = await getLessonsBySectionId(section.id)
-			return {
-				id: section.id,
-				slug: section.fields?.slug || section.id, // Use slug from fields if available
-				title:
-					typeof section.fields?.title === 'string'
-						? { en: section.fields.title }
-						: section.fields?.title || { en: `Section ${section.id}` },
-				type: 'section' as const,
-				position: 0, // You may need to add position to your schema
-				lessons: lessons.map((lesson, index) => ({
-					id: lesson.id,
-					slug: lesson.fields?.slug || lesson.id, // Use slug from fields if available
-					title:
-						typeof lesson.fields?.title === 'string'
-							? { en: lesson.fields.title }
-							: lesson.fields?.title || { en: `Lesson ${index + 1}` },
-					type: 'lesson' as const,
-					position: index,
-				})),
-			}
-		})
-
-		const sectionWithLessons = await Promise.all(sectionPromises)
+		// Use the new function to get complete navigation data (standalone lessons + sections)
+		const navigationData = await getModuleNavigationData(moduleResource.id)
+		console.log(
+			`ModuleLayout: Retrieved navigation data with ${navigationData.resources.length} resources`,
+		)
 
 		// Get user progress for this module if logged in
 		const moduleProgressLoader = userId
-			? getProgressForModule(userId, moduleResource.id) // Use module.id, not moduleSlug
+			? getProgressForModule(userId, moduleResource.id)
 			: Promise.resolve(null)
 
-		// Prepare navigation data with sections and lessons
+		// Use the navigation data from our new function
 		const moduleNavigationLoader = Promise.resolve({
 			id: moduleResource.id,
 			slug: moduleSlug,
 			title:
 				typeof moduleResource.fields?.title === 'string'
 					? { en: moduleResource.fields.title }
-					: moduleResource.fields?.title || { en: `Module ${moduleResource.id}` },
-			resources: sectionWithLessons,
+					: (moduleResource.fields?.title as Record<string, string>) || {
+							en: `Module ${moduleResource.id}`,
+						},
+			resources: navigationData.resources,
 		})
 
 		return (

@@ -43,9 +43,6 @@ export async function getValidatedResource({ slug, expectedType }: ValidateResou
 	const resource = await getContentResourceBySlug(slug)
 
 	if (!resource || resource.type !== expectedType) {
-		console.log(
-			`Resource validation failed: Expected ${expectedType}, found ${resource?.type || 'null'} for slug "${slug}"`,
-		)
 		notFound()
 	}
 

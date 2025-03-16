@@ -26,17 +26,6 @@ export default async function HomePage({ params }: HomePageProps) {
 
 	const modules = await getModules()
 
-	// Debug logging for modules and their slugs
-	console.log(
-		'Modules fetched:',
-		modules.map((m) => ({
-			id: m.id,
-			type: m.type,
-			slug: m.fields?.slug || 'NO_SLUG',
-			title: m.fields?.title || 'NO_TITLE',
-		})),
-	)
-
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
 			<div className="container max-w-6xl mx-auto py-12 px-4">

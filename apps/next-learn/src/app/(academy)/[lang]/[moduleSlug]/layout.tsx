@@ -1,4 +1,4 @@
-import { type ReactNode, Suspense } from 'react'
+import { type ReactNode } from 'react'
 import { getContentResourceBySlug, getModuleNavigationData } from '@/server/content/resources'
 import { ModuleProgressProvider } from '@/components/providers/module-progress-provider'
 import { ModuleNavigationProvider } from '@/components/providers/module-navigation-provider'
@@ -7,6 +7,7 @@ import { auth } from '@/auth'
 import { getProgressForModule } from '@/server/progress/user-progress'
 import { notFound } from 'next/navigation'
 import { SidebarProvider } from '@/components/ui/sidebar'
+import { resolveParams } from '@/utils/localization'
 
 interface ModuleLayoutProps {
 	children: ReactNode
@@ -16,9 +17,15 @@ interface ModuleLayoutProps {
 	}
 }
 
+/**
+ * Server component layout that sets up navigation and module progress context.
+ * It fetches all necessary data on the server and passes it to client components.
+ */
 export default async function ModuleLayout({ children, params }: ModuleLayoutProps) {
 	try {
-		const { lang, moduleSlug } = params
+		// Properly resolve the params using the provided utility function
+		const resolvedParams = await resolveParams(params)
+		const { lang, moduleSlug } = resolvedParams
 
 		// Get the module resource by slug
 		const moduleResource = await getContentResourceBySlug(moduleSlug)

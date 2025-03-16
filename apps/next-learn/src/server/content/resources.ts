@@ -146,8 +146,8 @@ export async function getLessonsBySectionId(sectionId: string): Promise<ContentR
 }
 
 /**
- * Fetches all lessons that belong to sections within a specific module
- * Returns lessons with their associated section information
+ * Gets all lessons for a given module, with data about their containing sections
+ * This returns both lessons directly attached to a module and lessons nested within sections
  */
 export async function getLessonsByModuleId(
 	moduleId: string,
@@ -155,77 +155,83 @@ export async function getLessonsByModuleId(
 	Array<ContentResource & { sectionId: string; sectionTitle: string; sectionPosition: number }>
 > {
 	try {
-		// First get all sections belonging to this module
+		// First, get all sections for this module
 		const sections = await getSectionsByModuleId(moduleId)
 
-		if (!sections.length) {
-			console.log(`[getLessonsByModuleId] No sections found for module "${moduleId}"`)
-			return []
+		// If no sections, return only lessons directly attached to the module
+		if (sections.length === 0) {
+			// No need for debug logging
+			const directLessons = await db
+				.select({
+					id: contentResource.id,
+					type: contentResource.type,
+					fields: contentResource.fields,
+					createdAt: contentResource.createdAt,
+					updatedAt: contentResource.updatedAt,
+				})
+				.from(contentResource)
+				.innerJoin(
+					contentResourceResource,
+					and(
+						eq(contentResource.id, contentResourceResource.resourceId),
+						eq(contentResourceResource.resourceOfId, moduleId),
+					),
+				)
+				.where(eq(contentResource.type, 'lesson'))
+				.orderBy(sql`fields->>'position'`)
+
+			// Map lessons to include section info (using module as pseudo-section)
+			return directLessons
+				.map((lesson) => {
+					const parsedLesson = safelyParseResource(lesson)
+					if (!parsedLesson) return null
+
+					// Get the position from fields
+					const position = parsedLesson.fields?.position ? Number(parsedLesson.fields.position) : 0
+
+					return {
+						...parsedLesson,
+						sectionId: moduleId, // Use module ID as section ID
+						sectionTitle: 'Main', // Default title for direct lessons
+						sectionPosition: 0, // Always first position
+						position, // Add lesson position
+					}
+				})
+				.filter(Boolean) as Array<
+				ContentResource & { sectionId: string; sectionTitle: string; sectionPosition: number }
+			>
 		}
 
-		// Create a map to store section ID to section data for quick lookup
-		const sectionMap = new Map(
-			sections.map((section) => {
-				// Get the section from relationships data to access position
-				return [
-					section.id,
-					{
-						id: section.id,
-						title: section.fields?.title || 'Untitled Section',
-						// Default position to 0 if not found
-						position: 0,
-					},
-				]
-			}),
-		)
+		// Get lessons for each section
+		const sectionPromises = sections.map(async (section) => {
+			const sectionTitle = section.fields?.title
+				? typeof section.fields.title === 'string'
+					? section.fields.title
+					: section.fields.title.en || `Section ${section.id}` // Default to English if object or fallback
+				: `Section ${section.id}`
 
-		// Get all section IDs
-		const sectionIds = sections.map((section) => section.id)
+			const sectionPosition = section.fields?.position ? Number(section.fields.position) : 0
 
-		// Query to get all lessons from these sections along with their relationships
-		const result = await db
-			.select({
-				lesson: contentResource,
-				relationship: contentResourceResource,
-				sectionId: contentResourceResource.resourceOfId,
-			})
-			.from(contentResource)
-			.innerJoin(
-				contentResourceResource,
-				and(
-					eq(contentResourceResource.resourceId, contentResource.id),
-					// Use IN clause for multiple section IDs
-					sql`${contentResourceResource.resourceOfId} IN (${sectionIds.join(',')})`,
-				),
-			)
-			.where(eq(contentResource.type, 'lesson'))
-			.orderBy(contentResourceResource.position)
+			const lessons = await getLessonsBySectionId(section.id)
 
-		// Process and return the results with section information attached
-		return result
-			.map((r) => {
-				const lesson = safelyParseResource(r.lesson)
-				if (!lesson) return null
-
-				const sectionId = r.sectionId
-				const sectionInfo = sectionMap.get(sectionId)
+			// Return lessons with section information
+			return lessons.map((lesson) => {
+				const position = lesson.fields?.position ? Number(lesson.fields.position) : 0
 
 				return {
 					...lesson,
-					sectionId,
-					sectionTitle: sectionInfo?.title || 'Unknown Section',
-					sectionPosition: sectionInfo?.position || 0,
+					sectionId: section.id,
+					sectionTitle,
+					sectionPosition,
+					position,
 				}
 			})
-			.filter(
-				(
-					result,
-				): result is ContentResource & {
-					sectionId: string
-					sectionTitle: string
-					sectionPosition: number
-				} => result !== null,
-			)
+		})
+
+		// Wait for all section lessons to complete
+		const lessonGroups = await Promise.all(sectionPromises)
+		// Flatten results
+		return lessonGroups.flat()
 	} catch (error) {
 		console.error(`[getLessonsByModuleId] Error fetching lessons for module "${moduleId}":`, error)
 		return []
@@ -260,70 +266,31 @@ export async function getContentResourceById(resourceId: string): Promise<Conten
  */
 export async function getContentResourceBySlug(slug: string): Promise<ContentResource | null> {
 	try {
-		// Simple string without interpolation
-		console.log('[getContentResourceBySlug] Searching for resource with slug:', slug)
-
 		// First try: direct match on fields->>'slug'
-		console.log('[getContentResourceBySlug] Executing query with fields->>"slug"')
 		let result = await db
 			.select()
 			.from(contentResource)
 			.where(sql`fields->>'slug' = ${slug}`)
 			.limit(1)
 
-		console.log('[getContentResourceBySlug] First query result count:', result.length)
-
 		// If no results, try with a more flexible approach
 		if (result.length === 0) {
-			console.log('[getContentResourceBySlug] No exact match found, trying case-insensitive search')
 			// Try with LOWER function for case-insensitive matching
 			result = await db
 				.select()
 				.from(contentResource)
 				.where(sql`LOWER(fields->>'slug') = LOWER(${slug})`)
 				.limit(1)
-
-			console.log('[getContentResourceBySlug] Case-insensitive search result count:', result.length)
 		}
 
 		// If still no results, do a fallback search by ID
 		if (result.length === 0) {
-			console.log('[getContentResourceBySlug] No slug match found, trying as ID')
 			result = await db.select().from(contentResource).where(eq(contentResource.id, slug)).limit(1)
-			console.log('[getContentResourceBySlug] ID search result count:', result.length)
 		}
 
 		if (!result[0]) {
-			console.log('[getContentResourceBySlug] No resource found with slug or ID:', slug)
-
-			// Last resort: get all content resources to see what's available
-			const allResources = await db
-				.select({
-					id: contentResource.id,
-					type: contentResource.type,
-					fields: contentResource.fields,
-				})
-				.from(contentResource)
-				.limit(20)
-
-			console.log(
-				'[getContentResourceBySlug] Available resources:',
-				allResources.map((r) => ({
-					id: r.id,
-					type: r.type,
-					slug: r.fields?.slug || 'NO_SLUG',
-					title: r.fields?.title || 'NO_TITLE',
-				})),
-			)
-
 			return null
 		}
-
-		console.log('[getContentResourceBySlug] Found resource:', {
-			id: result[0].id,
-			type: result[0].type,
-			fields: result[0].fields,
-		})
 
 		// Validate result with Zod but use the safer parsing method
 		return safelyParseResource(result[0])

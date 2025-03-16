@@ -33,10 +33,6 @@ export default async function ModulePage({ params }: ModulePageProps) {
 		// Resolve and destructure params
 		const { lang, moduleSlug } = await resolveParams(params)
 
-		console.log(
-			`ModulePage: Attempting to fetch module with slug "${moduleSlug}" and lang "${lang}"`,
-		)
-
 		// Validate the module resource
 		const moduleResource = await getValidatedResource({
 			slug: moduleSlug,
@@ -45,9 +41,6 @@ export default async function ModulePage({ params }: ModulePageProps) {
 
 		// Fetch all lessons for this module grouped by section
 		const lessonsWithSections = await getLessonsByModuleId(moduleResource.id)
-		console.log(
-			`ModulePage: Found ${lessonsWithSections.length} lessons for module ${moduleResource.id}`,
-		)
 
 		// Group lessons by sectionId for display
 		const sectionGroups = lessonsWithSections.reduce<Record<string, typeof lessonsWithSections>>(
@@ -91,8 +84,6 @@ export default async function ModulePage({ params }: ModulePageProps) {
 			lang,
 			defaultValue: '',
 		})
-
-		console.log('ModulePage: About to render component')
 
 		return (
 			<div className="container max-w-6xl mx-auto py-8 px-4">

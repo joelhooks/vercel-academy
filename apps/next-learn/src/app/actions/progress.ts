@@ -1,6 +1,6 @@
 'use server'
 
-import { markResourceComplete, updateResourceProgress } from '@/lib/data/progress'
+import { markResourceComplete, updateResourceProgress } from '@/server/progress/user-progress'
 import { revalidatePath } from 'next/cache'
 
 /**

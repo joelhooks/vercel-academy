@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useModuleNavigation } from '@/components/providers/module-navigation-provider'
 import { useModuleProgress } from '@/components/providers/module-progress-provider'
-import { getLocalizedField } from '@/lib/content-resources'
+import { getLocalizedContent } from '@/utils/localization'
 import {
 	Sidebar,
 	SidebarContent,
@@ -73,12 +73,16 @@ export function ModuleNavigation({ lang }: { lang: string }) {
 	const { isSidebarCollapsed, setIsSidebarCollapsed, resources } = navigation
 
 	// Get the module title
-	const moduleTitle = getLocalizedField<string>(
-		{ fields: { title: navigation.title } },
-		'title',
-		lang,
-		'Module',
-	)
+	const moduleTitle = getLocalizedContent<string>({
+		resource: {
+			id: '',
+			type: 'module',
+			fields: { title: navigation.title },
+		},
+		field: 'title',
+		lang: lang,
+		defaultValue: 'Module',
+	})
 
 	return (
 		<Sidebar className="bg-white border-r" collapsible={isSidebarCollapsed ? 'icon' : 'offcanvas'}>
@@ -123,12 +127,16 @@ function renderLesson(
 	lang: string,
 	pathname: string,
 ) {
-	const title = getLocalizedField<string>(
-		{ fields: { title: resource.title } },
-		'title',
-		lang,
-		'Lesson',
-	)
+	const title = getLocalizedContent<string>({
+		resource: {
+			id: resource.id,
+			type: resource.type,
+			fields: { title: resource.title },
+		},
+		field: 'title',
+		lang: lang,
+		defaultValue: 'Lesson',
+	})
 
 	const isComplete = moduleProgress?.completedLessons.some(
 		(lesson) => lesson.resourceId === resource.id,
@@ -159,12 +167,16 @@ function renderSection(
 	lang: string,
 	pathname: string,
 ) {
-	const sectionTitle = getLocalizedField<string>(
-		{ fields: { title: resource.title } },
-		'title',
-		lang,
-		'Section',
-	)
+	const sectionTitle = getLocalizedContent<string>({
+		resource: {
+			id: resource.id,
+			type: resource.type,
+			fields: { title: resource.title },
+		},
+		field: 'title',
+		lang: lang,
+		defaultValue: 'Section',
+	})
 
 	return (
 		<SidebarMenuItem key={resource.id} className="mb-3">
@@ -174,12 +186,16 @@ function renderSection(
 
 			<SidebarMenuSub>
 				{resource.lessons.map((lesson) => {
-					const lessonTitle = getLocalizedField<string>(
-						{ fields: { title: lesson.title } },
-						'title',
-						lang,
-						`Lesson ${lesson.position + 1}`,
-					)
+					const lessonTitle = getLocalizedContent<string>({
+						resource: {
+							id: lesson.id,
+							type: lesson.type,
+							fields: { title: lesson.title },
+						},
+						field: 'title',
+						lang: lang,
+						defaultValue: `Lesson ${lesson.position + 1}`,
+					})
 
 					const isComplete = moduleProgress?.completedLessons.some(
 						(completed) => completed.resourceId === lesson.id,

@@ -7,7 +7,7 @@ import {
 	ResourceProgressSchema,
 	formatProgressPercentage,
 	hasStartedResource,
-} from './schemas/resource-progress'
+} from '@/schemas/progress'
 
 // Define types for module progress
 interface CompletedLesson {

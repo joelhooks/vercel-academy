@@ -1,10 +1,10 @@
-import { getLessonsBySectionId } from '@/lib/content-resources'
+import { getLessonsBySectionId } from '@/server/content/resources'
 import Link from 'next/link'
 import { auth } from '@/auth'
 import { LessonCompleteButton } from '@/components/lesson-complete-button'
 import { Suspense } from 'react'
-import { generateLessonParams } from '@/lib/static-params'
-import { getValidatedResource, getLocalizedContent, resolveParams } from '@/lib/resource-helpers'
+import { generateLessonParams } from '@/server/params/static-params'
+import { getValidatedResource, getLocalizedContent, resolveParams } from '@/utils/localization'
 
 // Import shadcn UI components
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

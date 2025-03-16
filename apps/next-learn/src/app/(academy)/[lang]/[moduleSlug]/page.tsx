@@ -1,7 +1,7 @@
-import { getSectionsByModuleId } from '@/lib/content-resources'
+import { getSectionsByModuleId } from '@/server/content/resources'
 import Link from 'next/link'
-import { generateModuleParams } from '@/lib/static-params'
-import { getValidatedResource, getLocalizedContent, resolveParams } from '@/lib/resource-helpers'
+import { generateModuleParams } from '@/server/params/static-params'
+import { getValidatedResource, getLocalizedContent, resolveParams } from '@/utils/localization'
 
 // Import shadcn UI components
 import {

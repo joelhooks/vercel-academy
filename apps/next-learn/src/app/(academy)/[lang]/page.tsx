@@ -1,4 +1,5 @@
-import { getModules, getLocalizedField } from '@/lib/content-resources'
+import { getModules } from '@/server/content/resources'
+import { getLocalizedContent } from '@/utils/localization'
 import Link from 'next/link'
 
 // Import shadcn UI components
@@ -64,27 +65,39 @@ export default async function HomePage({ params }: HomePageProps) {
 
 				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 					{modules.map((module) => {
-						const title = getLocalizedField<string>(
-							{ fields: module.fields || {} },
-							'title',
-							lang,
-							`Module ${module.id}`,
-						)
+						const title = getLocalizedContent<string>({
+							resource: {
+								id: module.id,
+								type: module.type,
+								fields: module.fields || {},
+							},
+							field: 'title',
+							lang: lang,
+							defaultValue: `Module ${module.id}`,
+						})
 
-						const description = getLocalizedField<string>(
-							{ fields: module.fields || {} },
-							'description',
-							lang,
-							'',
-						)
+						const description = getLocalizedContent<string>({
+							resource: {
+								id: module.id,
+								type: module.type,
+								fields: module.fields || {},
+							},
+							field: 'description',
+							lang: lang,
+							defaultValue: '',
+						})
 
 						// Get module slug from fields, fallback to ID if not available
-						const moduleSlug = getLocalizedField<string>(
-							{ fields: module.fields || {} },
-							'slug',
-							lang,
-							module.id,
-						)
+						const moduleSlug = getLocalizedContent<string>({
+							resource: {
+								id: module.id,
+								type: module.type,
+								fields: module.fields || {},
+							},
+							field: 'slug',
+							lang: lang,
+							defaultValue: module.id,
+						})
 
 						return (
 							<Card

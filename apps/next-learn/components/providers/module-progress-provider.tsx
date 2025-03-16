@@ -3,8 +3,6 @@
 import * as React from 'react'
 import type { ModuleProgress } from '@/server/progress/user-progress'
 
-// Define a basic schema for module progress until we import the actual one
-
 type ModuleProgressContextType = {
 	moduleProgress: ModuleProgress | null
 	removeLessonProgress: (lessonId: string) => void

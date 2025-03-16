@@ -1,8 +1,10 @@
+'use server'
+
 import db from '@/db'
 import { contentResource, contentResourceResource } from '@/db/schema'
 import { eq, and, sql } from 'drizzle-orm'
-import { ContentResourceSchema, getLocalizedField } from '@/lib/schemas/content-resource'
-import type { ContentResource } from '@/lib/schemas/content-resource'
+import { ContentResourceSchema } from '@/schemas/content'
+import type { ContentResource } from '@/schemas/content'
 import { ZodError } from 'zod'
 
 // Define a type for the raw resource data
@@ -242,6 +244,3 @@ export async function getContentResourceBySlug(slug: string): Promise<ContentRes
 		return null
 	}
 }
-
-// Re-export getLocalizedField for convenience
-export { getLocalizedField }

@@ -3,12 +3,12 @@ import {
 	getContentResourceBySlug,
 	getLessonsBySectionId,
 	getSectionsByModuleId,
-} from '@/lib/content-resources'
+} from '@/server/content/resources'
 import { ModuleProgressProvider } from '@/components/providers/module-progress-provider'
 import { ModuleNavigationProvider } from '@/components/providers/module-navigation-provider'
 import { ModuleNavigation } from '@/components/module-navigation'
 import { auth } from '@/auth'
-import { getProgressForModule } from '@/lib/resource-progress'
+import { getProgressForModule } from '@/server/progress/user-progress'
 import { notFound } from 'next/navigation'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 

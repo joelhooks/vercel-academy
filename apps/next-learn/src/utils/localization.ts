@@ -1,10 +1,10 @@
-import { getContentResourceBySlug } from '@/lib/content-resources'
+import { getContentResourceBySlug } from '@/server/content/resources'
 import { notFound } from 'next/navigation'
 
 /**
  * Represents a content resource with fields
  */
-interface ResourceWithFields {
+export interface ResourceWithFields {
 	id: string
 	type: 'module' | 'section' | 'lesson'
 	fields?: {
@@ -28,7 +28,7 @@ function isRecordWithStringKeys(value: unknown): value is Record<string, unknown
 /**
  * Options for the getValidatedResource function
  */
-interface ValidateResourceOptions {
+export interface ValidateResourceOptions {
 	slug: string
 	expectedType: string
 }
@@ -55,7 +55,7 @@ export async function getValidatedResource({ slug, expectedType }: ValidateResou
 /**
  * Options for the getLocalizedContent function
  */
-interface LocalizedContentOptions<T> {
+export interface LocalizedContentOptions<T> {
 	resource: ResourceWithFields
 	field: string
 	lang: string

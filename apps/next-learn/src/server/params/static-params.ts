@@ -1,4 +1,8 @@
-import { getModules, getSectionsByModuleId, getLessonsBySectionId } from '@/lib/content-resources'
+import {
+	getModules,
+	getSectionsByModuleId,
+	getLessonsBySectionId,
+} from '@/server/content/resources'
 import { locales } from '@/config/locales'
 
 /**
@@ -34,19 +38,16 @@ export async function generateSectionParams() {
 	for (const moduleResource of modules) {
 		if (!moduleResource.fields?.slug) continue
 
-		const moduleSlug = moduleResource.fields.slug
 		const sections = await getSectionsByModuleId(moduleResource.id)
 
-		for (const section of sections) {
-			if (!section.fields?.slug) continue
-
-			const sectionSlug = section.fields.slug || section.id
+		for (const sectionResource of sections) {
+			if (!sectionResource.fields?.slug) continue
 
 			for (const locale of locales) {
 				params.push({
 					lang: locale,
-					moduleSlug: moduleSlug,
-					sectionSlug: sectionSlug,
+					moduleSlug: moduleResource.fields.slug,
+					sectionSlug: sectionResource.fields.slug,
 				})
 			}
 		}
@@ -66,26 +67,22 @@ export async function generateLessonParams() {
 	for (const moduleResource of modules) {
 		if (!moduleResource.fields?.slug) continue
 
-		const moduleSlug = moduleResource.fields.slug
 		const sections = await getSectionsByModuleId(moduleResource.id)
 
-		for (const section of sections) {
-			if (!section.fields?.slug) continue
+		for (const sectionResource of sections) {
+			if (!sectionResource.fields?.slug) continue
 
-			const sectionSlug = section.fields.slug || section.id
-			const lessons = await getLessonsBySectionId(section.id)
+			const lessons = await getLessonsBySectionId(sectionResource.id)
 
-			for (const lesson of lessons) {
-				if (!lesson.fields?.slug) continue
-
-				const lessonSlug = lesson.fields.slug || lesson.id
+			for (const lessonResource of lessons) {
+				if (!lessonResource.fields?.slug) continue
 
 				for (const locale of locales) {
 					params.push({
 						lang: locale,
-						moduleSlug: moduleSlug,
-						sectionSlug: sectionSlug,
-						lessonSlug: lessonSlug,
+						moduleSlug: moduleResource.fields.slug,
+						sectionSlug: sectionResource.fields.slug,
+						lessonSlug: lessonResource.fields.slug,
 					})
 				}
 			}

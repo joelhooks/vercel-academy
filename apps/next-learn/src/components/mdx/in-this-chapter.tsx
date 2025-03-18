@@ -302,7 +302,7 @@ export function InThisChapter({ topics }: { topics: Topic[] }): React.ReactEleme
 		<div className="not-prose mb-4 rounded-[12px] md:mx-[-64px] md:my-12 md:p-4 md:px-[64px] md:py-12 md:bg-blue-50 dark:md:bg-blue-950">
 			<h3 className="pb-1 text-xl md:text-2xl font-semibold">In this chapter...</h3>
 			<p className="text-sm md:text-base text-gray-700 dark:text-gray-300 m-0">
-				Here are the topics we'll cover
+				Here are the topics we&apos;ll cover
 			</p>
 			<div className="mx-auto mt-4 flex w-full max-w-[960px] flex-col rounded-md px-4 py-2 shadow-md md:mt-8 bg-white dark:bg-gray-800">
 				{topics.map((topic) => (

@@ -1,4 +1,3 @@
-import { getLessonsByModuleId } from '@/server/content/resources'
 import Link from 'next/link'
 import { auth } from '@/auth'
 import { LessonCompleteButton } from '@/components/lesson-complete-button'
@@ -17,18 +16,8 @@ import { Tabs } from '@/components/mdx/tabs'
 import { Card as MdxCard } from '@/components/mdx/card'
 
 // Import shadcn UI components
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
-import { ModuleNavigationProvider } from '@/components/providers/module-navigation-provider'
 
 export async function generateStaticParams() {
 	return generateNewLessonParams()

@@ -8,6 +8,10 @@ import {
 	formatProgressPercentage,
 	hasStartedResource,
 } from '@/schemas/progress'
+import { z } from 'zod'
+
+// Define the type for the result of ResourceProgressSchema.parse
+type ResourceProgress = z.infer<typeof ResourceProgressSchema>
 
 // Define types for module progress
 interface CompletedLesson {
@@ -126,7 +130,7 @@ export async function markResourceIncomplete(userId: string, resourceId: string)
 /**
  * Retrieves all progress records for a specific user
  */
-export async function getAllProgressForUser(userId: string): Promise<any[]> {
+export async function getAllProgressForUser(userId: string): Promise<ResourceProgress[]> {
 	try {
 		const result = await db
 			.select()

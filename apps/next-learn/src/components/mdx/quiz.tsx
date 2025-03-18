@@ -5,6 +5,59 @@ import { useEffect, useState, type JSX } from 'react'
 import Cookies from 'js-cookie'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Icon } from '@/components/ui/icon'
+
+// Define constants for styles and dimensions
+const DIMENSIONS = {
+	QUIZ_PLACEHOLDER_HEIGHT: 'h-[697px]',
+	ICON_CONTAINER: 'h-[56px] w-[56px]',
+	QUESTION_CONTAINER_WIDTH: 'w-[200px]',
+	CONTENT_MAX_WIDTH: 'max-w-[640px]',
+	EXPLANATION_MAX_WIDTH: 'max-w-[380px]',
+}
+
+const ICON_SIZES = {
+	QUIZ_ICON: 32,
+	BADGE_ICON: 16,
+}
+
+// Cookie management utility
+const COOKIE_CONFIG = {
+	NAME: 'finishedQuizes',
+	EXPIRES_DAYS: 30, // Cookie will expire after 30 days
+	PATH: '/',
+}
+
+const QuizCookies = {
+	getCompletedQuizzes(): string[] {
+		try {
+			const cookieValue = Cookies.get(COOKIE_CONFIG.NAME)
+			return cookieValue ? JSON.parse(cookieValue) : []
+		} catch (error) {
+			console.error('Error parsing quiz cookie:', error)
+			return []
+		}
+	},
+
+	saveCompletedQuiz(question: string): void {
+		try {
+			const completedQuizzes = this.getCompletedQuizzes()
+			if (!completedQuizzes.includes(question)) {
+				completedQuizzes.push(question)
+				Cookies.set(COOKIE_CONFIG.NAME, JSON.stringify(completedQuizzes), {
+					expires: COOKIE_CONFIG.EXPIRES_DAYS,
+					path: COOKIE_CONFIG.PATH,
+				})
+			}
+		} catch (error) {
+			console.error('Error saving quiz cookie:', error)
+		}
+	},
+
+	hasCompletedQuiz(question: string): boolean {
+		return this.getCompletedQuizzes().includes(question)
+	},
+}
 
 interface QuizProps {
 	question: string
@@ -24,17 +77,12 @@ export function Quiz({
 	const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
 	const [mounted, setMounted] = useState(false)
 	const [state, setState] = useState<'idle' | 'correct' | 'incorrect'>('idle')
-	const finishedQuizes = Cookies.get('finishedQuizes')
-		? (JSON.parse(Cookies.get('finishedQuizes') as string) as string[])
-		: null
-	const hasBeenAnsweredCorrectly = finishedQuizes?.includes(question)
+	const hasBeenAnsweredCorrectly = mounted ? QuizCookies.hasCompletedQuiz(question) : false
 
 	function checkAnswer(): void {
 		if (selectedAnswer === correctAnswer) {
 			setState('correct')
-
-			const newQuizes = finishedQuizes ? [...finishedQuizes, `${question}`] : [`${question}`]
-			Cookies.set('finishedQuizes', JSON.stringify(newQuizes))
+			QuizCookies.saveCompletedQuiz(question)
 		} else {
 			setState('incorrect')
 		}
@@ -48,20 +96,24 @@ export function Quiz({
 
 	if (!mounted) {
 		return (
-			<div className="bg-blue-50 dark:bg-blue-950 mt-12 flex h-[697px] flex-col justify-center rounded-[16px] py-12" />
+			<div
+				className={`bg-blue-50 dark:bg-blue-950 mt-12 flex ${DIMENSIONS.QUIZ_PLACEHOLDER_HEIGHT} flex-col justify-center rounded-[16px] py-12`}
+			/>
 		)
 	}
 
 	return (
 		<div className="bg-blue-50 dark:bg-blue-950 not-prose mt-12 flex flex-col justify-center rounded-[16px] px-4 py-4 md:-mx-[62px] md:px-0 md:py-14">
 			<div className="flex flex-col items-center">
-				<div className="mb-4 flex h-[56px] w-[56px] items-center justify-center rounded-full bg-blue-700">
+				<div
+					className={`mb-4 flex ${DIMENSIONS.ICON_CONTAINER} items-center justify-center rounded-full bg-blue-700`}
+				>
 					<svg
 						className="text-gray-100"
 						fill="none"
-						height="32"
-						viewBox="0 0 32 32"
-						width="32"
+						height={ICON_SIZES.QUIZ_ICON}
+						viewBox={`0 0 ${ICON_SIZES.QUIZ_ICON} ${ICON_SIZES.QUIZ_ICON}`}
+						width={ICON_SIZES.QUIZ_ICON}
 						xmlns="http://www.w3.org/2000/svg"
 					>
 						<g clipPath="url(#clip0_132_19094)">
@@ -74,19 +126,27 @@ export function Quiz({
 						</g>
 						<defs>
 							<clipPath id="clip0_132_19094">
-								<rect fill="currentColor" height="32" width="32" />
+								<rect
+									fill="currentColor"
+									height={ICON_SIZES.QUIZ_ICON}
+									width={ICON_SIZES.QUIZ_ICON}
+								/>
 							</clipPath>
 						</defs>
 					</svg>
 				</div>
-				<h3 className="text-xl md:text-2xl font-semibold">It's time to take a quiz!</h3>
-				<div className="md:max-w-auto w-[200px] text-center md:w-auto">
+				<h3 className="text-xl md:text-2xl font-semibold">It&apos;s time to take a quiz!</h3>
+				<div
+					className={`md:max-w-auto ${DIMENSIONS.QUESTION_CONTAINER_WIDTH} text-center md:w-auto`}
+				>
 					<p className="pt-2 text-gray-900 dark:text-gray-200">
-						Test your knowledge and see what you've just learned.
+						Test your knowledge and see what you&apos;ve just learned.
 					</p>
 				</div>
 			</div>
-			<div className="bg-white dark:bg-gray-800 mx-auto mt-8 flex w-full max-w-[640px] flex-col items-center rounded-lg p-4 shadow-md md:p-8">
+			<div
+				className={`bg-white dark:bg-gray-800 mx-auto mt-8 flex w-full ${DIMENSIONS.CONTENT_MAX_WIDTH} flex-col items-center rounded-lg p-4 shadow-md md:p-8`}
+			>
 				{state === 'idle' && !hasBeenAnsweredCorrectly ? (
 					<>
 						<div className="text-center">
@@ -146,46 +206,22 @@ export function Quiz({
 							{state === 'correct' || hasBeenAnsweredCorrectly ? (
 								<Badge className="my-6" variant="outline">
 									<span className="flex items-center gap-1 text-green-600 dark:text-green-500">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="16"
-											height="16"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-											strokeWidth="2"
-											strokeLinecap="round"
-											strokeLinejoin="round"
-										>
-											<polyline points="20 6 9 17 4 12" />
-										</svg>
+										<Icon name="check" size={ICON_SIZES.BADGE_ICON} />
 										Correct
 									</span>
 								</Badge>
 							) : (
 								<Badge className="my-6" variant="outline">
 									<span className="flex items-center gap-1 text-amber-600 dark:text-amber-500">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="16"
-											height="16"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-											strokeWidth="2"
-											strokeLinecap="round"
-											strokeLinejoin="round"
-										>
-											<line x1="18" y1="6" x2="6" y2="18"></line>
-											<line x1="6" y1="6" x2="18" y2="18"></line>
-										</svg>
+										<Icon name="close" size={ICON_SIZES.BADGE_ICON} />
 										Not quite
 									</span>
 								</Badge>
 							)}
 
-							<p className="text-center mx-auto w-full max-w-[380px] text-gray-700 dark:text-gray-300 text-sm">
-								{/* eslint-disable-next-line no-nested-ternary */}
+							<p
+								className={`text-center mx-auto w-full ${DIMENSIONS.EXPLANATION_MAX_WIDTH} text-gray-700 dark:text-gray-300 text-sm`}
+							>
 								{state === 'correct' || hasBeenAnsweredCorrectly
 									? explanation
 									: hint
@@ -195,7 +231,6 @@ export function Quiz({
 						</div>
 					</div>
 				)}
-				{/* eslint-disable-next-line no-nested-ternary */}
 				{state === 'correct' || hasBeenAnsweredCorrectly ? null : state === 'incorrect' ? (
 					<div className="mt-6 flex justify-center">
 						<Button
@@ -206,19 +241,7 @@ export function Quiz({
 							variant="outline"
 							className="flex items-center gap-2"
 						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							>
-								<path d="m15 18-6-6 6-6" />
-							</svg>
+							<Icon name="arrow-left" size={ICON_SIZES.BADGE_ICON} />
 							Try Again
 						</Button>
 					</div>

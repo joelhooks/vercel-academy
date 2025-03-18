@@ -1,8 +1,9 @@
 'use client'
 
 import React from 'react'
-import { Highlight, themes, type PrismTheme } from 'prism-react-renderer'
+import { Highlight, themes, type Language } from 'prism-react-renderer'
 import { useTheme } from 'next-themes'
+import type { PrismTheme } from 'prism-react-renderer'
 
 interface CodeBlockProps {
 	code: string
@@ -34,7 +35,7 @@ export function CodeBlock({
 					{filename}
 				</div>
 			)}
-			<Highlight theme={theme as PrismTheme} code={code.trim()} language={language as any}>
+			<Highlight theme={theme as PrismTheme} code={code.trim()} language={language as Language}>
 				{({ className, style, tokens, getLineProps, getTokenProps }) => (
 					<pre className={`${className} text-sm p-4 overflow-auto`} style={style}>
 						{tokens.map((line, i) => {

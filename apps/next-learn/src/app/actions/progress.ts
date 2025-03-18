@@ -11,8 +11,18 @@ export async function markComplete(formData: FormData) {
 	const resourceId = formData.get('resourceId') as string
 	const returnPath = formData.get('returnPath') as string
 
-	if (!userId || !resourceId) {
-		return { error: 'Missing required fields' }
+	// Enhanced validation
+	if (!userId) {
+		return { error: 'User ID is required' }
+	}
+
+	if (!resourceId) {
+		return { error: 'Resource ID is required' }
+	}
+
+	// Basic validation for resource ID format (assuming it should be alphanumeric)
+	if (!/^[a-zA-Z0-9_-]+$/.test(resourceId)) {
+		return { error: 'Invalid resource ID format' }
 	}
 
 	try {
@@ -26,7 +36,10 @@ export async function markComplete(formData: FormData) {
 		return { success: true }
 	} catch (error) {
 		console.error('Error marking resource complete:', error)
-		return { error: 'Failed to update progress' }
+		return {
+			error: 'Failed to update progress',
+			details: error instanceof Error ? error.message : String(error),
+		}
 	}
 }
 
@@ -40,8 +53,17 @@ export async function updateProgress(formData: FormData) {
 	const progressPercent = Number.parseFloat(progressValue)
 	const returnPath = formData.get('returnPath') as string
 
-	if (!userId || !resourceId || Number.isNaN(progressPercent)) {
-		return { error: 'Missing or invalid fields' }
+	// Enhanced validation
+	if (!userId) {
+		return { error: 'User ID is required' }
+	}
+
+	if (!resourceId) {
+		return { error: 'Resource ID is required' }
+	}
+
+	if (Number.isNaN(progressPercent) || progressPercent < 0 || progressPercent > 100) {
+		return { error: 'Progress percentage must be a number between 0 and 100' }
 	}
 
 	try {
@@ -55,6 +77,9 @@ export async function updateProgress(formData: FormData) {
 		return { success: true }
 	} catch (error) {
 		console.error('Error updating resource progress:', error)
-		return { error: 'Failed to update progress' }
+		return {
+			error: 'Failed to update progress',
+			details: error instanceof Error ? error.message : String(error),
+		}
 	}
 }

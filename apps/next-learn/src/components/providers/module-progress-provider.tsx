@@ -70,7 +70,21 @@ export const ModuleProgressProvider = ({
 	children: React.ReactNode
 	moduleProgressLoader: Promise<ModuleProgress | null>
 }) => {
-	const initialProgress = React.use(moduleProgressLoader)
+	// Wrap the React.use call in a try-catch to handle potential errors
+	let initialProgress: ModuleProgress | null = null
+	try {
+		initialProgress = React.use(moduleProgressLoader)
+	} catch (error) {
+		console.error('Error loading module progress:', error)
+		// Fall back to empty progress
+		initialProgress = {
+			completedLessons: [],
+			nextResource: null,
+			percentCompleted: 0,
+			completedLessonsCount: 0,
+			totalLessonsCount: 0,
+		}
+	}
 
 	const [optimisticProgress, updateOptimisticProgress] = React.useOptimistic(
 		initialProgress,

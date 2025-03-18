@@ -106,7 +106,7 @@ export function ModuleNavigation({ lang }: { lang: string }) {
 
 			<SidebarContent>
 				<SidebarMenu>
-					{resources.map((resource, index) => {
+					{resources.map((resource) => {
 						if (resource.type === 'lesson') {
 							return renderLesson(resource, navigation, moduleProgress, lang, pathname)
 						}

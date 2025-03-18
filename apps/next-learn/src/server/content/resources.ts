@@ -18,6 +18,16 @@ type RawResourceData = {
 	deletedAt?: Date | null
 }
 
+// Navigation item interface
+interface NavigationItem {
+	id: string
+	slug: string
+	title: unknown
+	position: number
+	type: 'section' | 'lesson'
+	lessons?: NavigationItem[]
+}
+
 /**
  * Helper function to safely parse content resources with Zod
  * Falls back to a more lenient approach if strict validation fails
@@ -309,14 +319,11 @@ export async function getContentResourceBySlug(slug: string): Promise<ContentRes
  */
 export const getModuleNavigationData = cache(async (moduleSlugOrId: string) => {
 	// Fetch the module
-	const module = await getContentResourceBySlug(moduleSlugOrId)
+	const moduleResource = await getContentResourceBySlug(moduleSlugOrId)
 
-	if (!module || module.type !== 'module') {
+	if (!moduleResource || moduleResource.type !== 'module') {
 		throw new Error(`Module not found: ${moduleSlugOrId}`)
 	}
-
-	// 1. Get all sections that belong to this module
-	const sections = await getSectionsByModuleId(module.id)
 
 	// 2. Get all lessons directly attached to the module (standalone lessons)
 	const standaloneModuleLessonsResult = await db.execute(sql`
@@ -330,7 +337,7 @@ export const getModuleNavigationData = cache(async (moduleSlugOrId: string) => {
 			ON cr.id = crr.resource_id
 		WHERE 
 			cr.type = 'lesson'
-			AND crr.resource_of_id = ${module.id}
+			AND crr.resource_of_id = ${moduleResource.id}
 			AND NOT EXISTS (
 				SELECT 1 FROM ${contentResourceResource} AS section_rel
 				JOIN ${contentResource} AS section 
@@ -338,7 +345,7 @@ export const getModuleNavigationData = cache(async (moduleSlugOrId: string) => {
 				JOIN ${contentResourceResource} AS lesson_section_rel 
 					ON lesson_section_rel.resource_of_id = section.id
 				WHERE 
-					section_rel.resource_of_id = ${module.id}
+					section_rel.resource_of_id = ${moduleResource.id}
 					AND lesson_section_rel.resource_id = cr.id
 			)
 	`)
@@ -361,7 +368,7 @@ export const getModuleNavigationData = cache(async (moduleSlugOrId: string) => {
 			ON lesson.id = lesson_rel.resource_id AND lesson.type = 'lesson'
 		WHERE 
 			section.type = 'section'
-			AND section_rel.resource_of_id = ${module.id}
+			AND section_rel.resource_of_id = ${moduleResource.id}
 		ORDER BY 
 			section_rel.position,
 			lesson_rel.position
@@ -417,20 +424,20 @@ export const getModuleNavigationData = cache(async (moduleSlugOrId: string) => {
 
 	// Sort lessons within each section
 	sectionsMap.forEach((section) => {
-		section.lessons.sort((a: any, b: any) => a.position - b.position)
+		section.lessons.sort((a: NavigationItem, b: NavigationItem) => a.position - b.position)
 	})
 
 	// Combine all resources and sort by position
 	const navigationSections = Array.from(sectionsMap.values())
 	const allResources = [...standaloneModuleLessons, ...navigationSections].sort(
-		(a: any, b: any) => a.position - b.position,
+		(a: NavigationItem, b: NavigationItem) => a.position - b.position,
 	)
 
 	return {
-		id: module.id,
-		slug: (module.fields?.slug as string) || '',
-		title: module.fields?.title || '',
-		coverImage: module.fields?.coverImage || null,
+		id: moduleResource.id,
+		slug: (moduleResource.fields?.slug as string) || '',
+		title: moduleResource.fields?.title || '',
+		coverImage: moduleResource.fields?.coverImage || null,
 		resources: allResources,
 	}
 })

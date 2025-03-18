@@ -13,9 +13,8 @@ export function LessonCompleteButton({ lessonId, onComplete }: LessonCompleteBut
 	const { moduleProgress, addLessonProgress, removeLessonProgress } = useModuleProgress()
 	const [isSubmitting, setIsSubmitting] = useState(false)
 
-	const isComplete = moduleProgress?.completedLessons.some(
-		(lesson) => lesson.resourceId === lessonId,
-	)
+	const isComplete =
+		moduleProgress?.completedLessons?.some((lesson) => lesson.resourceId === lessonId) || false
 
 	const handleToggleComplete = async () => {
 		setIsSubmitting(true)

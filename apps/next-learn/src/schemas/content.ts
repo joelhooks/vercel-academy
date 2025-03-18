@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { getLocalizedContent } from '@/utils/localization'
 
 /**
  * Zod schema for content resource fields

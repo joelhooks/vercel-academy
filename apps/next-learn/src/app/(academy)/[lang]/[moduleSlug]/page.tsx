@@ -7,8 +7,8 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 // Import UI components
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import components from '@/components/mdx/components'
-import mdxOptions from '@/components/mdx/mdx-options'
+import components from '@/mdx/components/components'
+import mdxOptions from '@/mdx/mdx-options'
 
 export async function generateStaticParams() {
 	return generateModuleParams()

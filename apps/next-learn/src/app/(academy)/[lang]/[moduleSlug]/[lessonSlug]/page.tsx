@@ -11,8 +11,8 @@ import { Separator } from '@/components/ui/separator'
 
 import '@/styles/hljs/github-dark.css'
 
-import components from '@/components/mdx/components'
-import mdxOptions from '@/components/mdx/mdx-options'
+import components from '@/mdx/components/components'
+import mdxOptions from '@/mdx/mdx-options'
 
 export async function generateStaticParams() {
 	return generateNewLessonParams()

@@ -1,4 +1,4 @@
-import mdxOptions from '@/components/mdx/mdx-options'
+import mdxOptions from '@/mdx/mdx-options'
 import { serialize } from 'next-mdx-remote/serialize'
 
 /**

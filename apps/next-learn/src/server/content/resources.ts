@@ -8,6 +8,8 @@ import type { ContentResource } from '@/schemas/content'
 import { ZodError } from 'zod'
 import { cache } from 'react'
 
+import 'server-only'
+
 // Define a type for the raw resource data
 type RawResourceData = {
 	id: string

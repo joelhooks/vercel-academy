@@ -8,6 +8,10 @@ export interface LocaleConfig {
 	defaultLocale: string
 }
 
+export interface Config {
+	locale: 'en' | 'fr' | 'es' | 'de' | 'ja' | string
+}
+
 export const localeConfig: LocaleConfig = {
 	locales: [
 		{

@@ -19,3 +19,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		}),
 	],
 })
+
+export const getServerAuthSession = async () => {
+	const session = await auth()
+	return session
+}

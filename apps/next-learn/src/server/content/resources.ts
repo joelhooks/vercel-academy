@@ -2,7 +2,7 @@
 
 import db from '@/db'
 import { contentResource, contentResourceResource } from '@/db/schema'
-import { eq, and, sql } from 'drizzle-orm'
+import { eq, and, sql, or } from 'drizzle-orm'
 import { ContentResourceSchema } from '@/schemas/content'
 import type { ContentResource } from '@/schemas/content'
 import { ZodError } from 'zod'
@@ -111,7 +111,10 @@ export async function getSectionsByModuleId(moduleId: string): Promise<ContentRe
 				contentResourceResource,
 				and(
 					eq(contentResourceResource.resourceId, contentResource.id),
-					eq(contentResourceResource.resourceOfId, moduleId),
+					or(
+						eq(sql`${contentResource.fields}->>'slug'`, moduleId),
+						eq(contentResourceResource.resourceOfId, moduleId),
+					),
 				),
 			)
 			.where(eq(contentResource.type, 'section'))
@@ -141,7 +144,10 @@ export async function getLessonsBySectionId(sectionId: string): Promise<ContentR
 				contentResourceResource,
 				and(
 					eq(contentResourceResource.resourceId, contentResource.id),
-					eq(contentResourceResource.resourceOfId, sectionId),
+					or(
+						eq(sql`${contentResource.fields}->>'slug'`, sectionId),
+						eq(contentResourceResource.resourceOfId, sectionId),
+					),
 				),
 			)
 			.where(eq(contentResource.type, 'lesson'))
@@ -186,7 +192,10 @@ export async function getLessonsByModuleId(
 					contentResourceResource,
 					and(
 						eq(contentResource.id, contentResourceResource.resourceId),
-						eq(contentResourceResource.resourceOfId, moduleId),
+						or(
+							eq(sql`${contentResource.fields}->>'slug'`, moduleId),
+							eq(contentResourceResource.resourceOfId, moduleId),
+						),
 					),
 				)
 				.where(eq(contentResource.type, 'lesson'))
@@ -255,11 +264,17 @@ export async function getLessonsByModuleId(
  * Use this for internal references; for user-facing URLs prefer getContentResourceBySlug
  */
 export async function getContentResourceById(resourceId: string): Promise<ContentResource | null> {
+	console.log('resourceId', resourceId)
 	try {
 		const result = await db
 			.select()
 			.from(contentResource)
-			.where(eq(contentResource.id, resourceId))
+			.where(
+				or(
+					eq(sql`${contentResource.fields}->>'slug'`, resourceId),
+					eq(contentResource.id, resourceId),
+				),
+			)
 			.limit(1)
 
 		if (!result[0]) return null
@@ -282,7 +297,7 @@ export async function getContentResourceBySlug(slug: string): Promise<ContentRes
 		let result = await db
 			.select()
 			.from(contentResource)
-			.where(sql`fields->>'slug' = ${slug}`)
+			.where(sql`${contentResource.fields}->>'slug' = ${slug}`)
 			.limit(1)
 
 		// If no results, try with a more flexible approach
@@ -291,7 +306,7 @@ export async function getContentResourceBySlug(slug: string): Promise<ContentRes
 			result = await db
 				.select()
 				.from(contentResource)
-				.where(sql`LOWER(fields->>'slug') = LOWER(${slug})`)
+				.where(sql`LOWER(${contentResource.fields}->>'slug') = LOWER(${slug})`)
 				.limit(1)
 		}
 

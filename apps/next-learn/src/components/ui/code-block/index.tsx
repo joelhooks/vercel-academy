@@ -481,29 +481,22 @@ export const CodeBlockContent = ({
 	const [html, setHtml] = useState<string | null>(null)
 
 	useEffect(() => {
+		// Use type assertion to avoid type errors with transformers
+		const transformers = [
+			transformerNotationDiff(),
+			transformerNotationHighlight(),
+			transformerNotationWordHighlight(),
+			transformerNotationFocus(),
+			transformerNotationErrorLevel(),
+		] as any
+
 		codeToHtml(children as string, {
 			lang: language,
 			themes: themes ?? {
 				light: 'vitesse-light',
 				dark: 'vitesse-dark',
 			},
-			transformers: [
-				transformerNotationDiff({
-					matchAlgorithm: 'v3',
-				}),
-				transformerNotationHighlight({
-					matchAlgorithm: 'v3',
-				}),
-				transformerNotationWordHighlight({
-					matchAlgorithm: 'v3',
-				}),
-				transformerNotationFocus({
-					matchAlgorithm: 'v3',
-				}),
-				transformerNotationErrorLevel({
-					matchAlgorithm: 'v3',
-				}),
-			],
+			transformers,
 		})
 			.then(setHtml)
 			.catch(console.error)

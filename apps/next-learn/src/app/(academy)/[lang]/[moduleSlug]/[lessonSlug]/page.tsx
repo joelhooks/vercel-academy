@@ -5,19 +5,14 @@ import { Suspense } from 'react'
 import { generateNewLessonParams } from '@/server/params/static-params'
 import { getValidatedResource, getLocalizedContent, resolveParams } from '@/utils/localization'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import { MdxImage } from '@/components/mdx/mdx-image'
-import { InThisChapter } from '@/components/mdx/in-this-chapter'
-import { Quiz } from '@/components/mdx/quiz'
-import { Reveal } from '@/components/mdx/reveal'
-import { Callout } from '@/components/mdx/callout'
-import { Steps, Step } from '@/components/mdx/steps'
-import { CodeBlock } from '@/components/mdx/code-block'
-import { Tabs } from '@/components/mdx/tabs'
-import { Card as MdxCard } from '@/components/mdx/card'
-
 // Import shadcn UI components
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+
+import '@/styles/hljs/github-dark.css'
+
+import components from '@/components/mdx/components'
+import mdxOptions from '@/components/mdx/mdx-options'
 
 export async function generateStaticParams() {
 	return generateNewLessonParams()
@@ -92,17 +87,9 @@ export default async function LessonPage({ params }: LessonPageProps) {
 			<div className="prose dark:prose-invert max-w-none mb-8">
 				<MDXRemote
 					source={lessonContent}
-					components={{
-						Image: MdxImage,
-						InThisChapter: InThisChapter,
-						Quiz: Quiz,
-						Reveal: Reveal,
-						Callout: Callout,
-						Steps: Steps,
-						Step: Step,
-						CodeBlock: CodeBlock,
-						Tabs: Tabs,
-						Card: MdxCard,
+					components={components}
+					options={{
+						mdxOptions,
 					}}
 				/>
 			</div>

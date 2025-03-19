@@ -20,5 +20,9 @@
 		"globals": "^16.0.0",
 		"typescript": "^5.8.2",
 		"typescript-eslint": "^8.26.0"
+	},
+	"dependencies": {
+		"framer-motion": "^12.5.0",
+		"lucide-react": "^0.479.0"
 	}
 }

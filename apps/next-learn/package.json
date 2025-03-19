@@ -50,6 +50,7 @@
 		"clsx": "^2.1.1",
 		"dotenv": "^16.4.7",
 		"drizzle-orm": "^0.40.0",
+		"framer-motion": "^12.5.0",
 		"graphql": "^16.10.0",
 		"gray-matter": "^4.0.3",
 		"hast-util-properties-to-mdx-jsx-attributes": "^1.0.1",

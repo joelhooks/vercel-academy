@@ -1,5 +1,5 @@
 import { Callout } from './callout'
-import { CodeBlock } from './code-block'
+import { Code } from './code'
 import { InThisChapter } from './in-this-chapter'
 import { MdxImage } from './mdx-image'
 import { Quiz } from './quiz'
@@ -18,7 +18,7 @@ export default {
 	Steps: Steps,
 	Step: Step,
 	// Map pre tags directly to CodeBlock
-	pre: CodeBlock,
+	pre: Code,
 	Tabs: Tabs,
 	Card: MdxCard,
 }

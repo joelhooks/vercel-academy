@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { auth } from '@/auth'
-import { LessonCompleteButton } from '@/components/lesson-complete-button'
 import { Suspense } from 'react'
 import { generateNewLessonParams } from '@/server/params/static-params'
 import { getValidatedResource, getLocalizedContent, resolveParams } from '@/utils/localization'
@@ -114,7 +113,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
 	// Calculate lesson position and next lesson
 	const lessons = moduleResource.lessons || []
 	const currentIndex = lessons.findIndex((lesson: Lesson) => lesson.id === lessonResource.id)
-	const nextLesson = lessons[currentIndex + 1]
 
 	return (
 		<>

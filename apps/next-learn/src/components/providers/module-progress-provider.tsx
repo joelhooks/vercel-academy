@@ -169,6 +169,7 @@ function ModuleProgressProviderInner({
 					setLocalProgress((prev) => progressReducer(prev, action))
 				}
 			} catch (error) {
+				console.error(error)
 				// Revert optimistic update on error
 				startTransition(() => {
 					updateOptimisticProgress({

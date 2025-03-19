@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react'
 import { getContentResourceBySlug, getModuleNavigationData } from '@/server/content/resources'
 import { ModuleNavigationProvider } from '@/components/providers/module-navigation-provider'
-import { auth } from '@/auth'
 import { notFound } from 'next/navigation'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { resolveParams } from '@/utils/localization'
@@ -32,10 +31,6 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 		if (!moduleResource || moduleResource.type !== 'module') {
 			return notFound()
 		}
-
-		// Get user session
-		const session = await auth()
-		const userId = session?.user?.id
 
 		// Use the function to get complete navigation data
 		const navigationData = await getModuleNavigationData(moduleResource.id)

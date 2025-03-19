@@ -3,31 +3,35 @@
 import * as React from 'react'
 
 // Define types for module navigation
-interface NavigationLesson {
+export interface NavigationLesson {
 	id: string
 	slug: string
-	title: Record<string, string>
+	title: string
 	position: number
 	type: 'lesson'
 }
 
-interface NavigationSection {
+export interface NavigationSection {
 	id: string
 	slug: string
-	title: Record<string, string>
+	title: string
 	position: number
 	type: 'section'
 	lessons: NavigationLesson[]
 }
 
-type NavigationResource = NavigationSection | NavigationLesson
+export type NavigationResource = NavigationSection | NavigationLesson
 
 interface ModuleNavigation {
 	id: string
 	slug: string
-	title: Record<string, string>
+	title: string
 	coverImage?: string | null
 	resources: NavigationResource[]
+	introduction?: {
+		title: string
+		description: string
+	}
 }
 
 const ModuleNavigationContext = React.createContext<
@@ -92,6 +96,10 @@ export function findSectionIdForLessonSlug(
 export function getFirstLessonSlug(navigation: ModuleNavigation | null) {
 	if (!navigation) return null
 
+	// Always consider the module root (Introduction) as the first entry
+	// Return null/undefined to indicate it's the root page
+	// Actual logic for finding resources comes next if needed
+
 	const firstResource = navigation.resources[0]
 	if (!firstResource) return null
 
@@ -100,4 +108,13 @@ export function getFirstLessonSlug(navigation: ModuleNavigation | null) {
 	}
 
 	return firstResource.slug
+}
+
+// Helper function to check if a path is the module root
+export function isModuleRoot(navigation: ModuleNavigation | null, path: string): boolean {
+	if (!navigation) return false
+
+	// Check if the path matches pattern /{lang}/{moduleSlug} exactly
+	const modulePathPattern = new RegExp(`/[^/]+/${navigation.slug}$`)
+	return modulePathPattern.test(path)
 }

@@ -2,12 +2,13 @@ import { type ReactNode } from 'react'
 import { getContentResourceBySlug, getModuleNavigationData } from '@/server/content/resources'
 import { ModuleProgressProvider } from '@/components/providers/module-progress-provider'
 import { ModuleNavigationProvider } from '@/components/providers/module-navigation-provider'
-import { ModuleNavigation } from '@/components/module-navigation'
 import { auth } from '@/auth'
 import { getProgressForModule } from '@/server/progress/user-progress'
 import { notFound } from 'next/navigation'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { resolveParams } from '@/utils/localization'
+import { getLocalizedContent } from '@/utils/localization'
+import { AcademyNav } from '@/components/academy/academy-nav'
 
 interface ModuleLayoutProps {
 	children: ReactNode
@@ -50,26 +51,41 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 		const moduleNavigationLoader = Promise.resolve({
 			id: moduleResource.id,
 			slug: moduleSlug,
-			title:
-				typeof moduleResource.fields?.title === 'string'
-					? { en: moduleResource.fields.title }
-					: (moduleResource.fields?.title as Record<string, string>) || {
-							en: `Module ${moduleResource.id}`,
-						},
+			title: getLocalizedContent({
+				resource: moduleResource,
+				field: 'title',
+				lang,
+				defaultValue: `Module ${moduleResource.id}`,
+			}),
 			resources: navigationData.resources,
+			// Include any introduction specific content
+			introduction: {
+				title: getLocalizedContent({
+					resource: moduleResource,
+					field: 'title',
+					lang,
+					defaultValue: 'Introduction',
+				}),
+				description: getLocalizedContent({
+					resource: moduleResource,
+					field: 'description',
+					lang,
+					defaultValue: '',
+				}),
+			},
 		})
 
 		return (
-			<SidebarProvider>
-				<ModuleNavigationProvider moduleNavDataLoader={moduleNavigationLoader}>
-					<ModuleProgressProvider moduleProgressLoader={moduleProgressLoader}>
-						<div className="flex h-full">
-							<ModuleNavigation lang={lang} />
-							<main className="flex-1 overflow-y-auto bg-background">{children}</main>
-						</div>
-					</ModuleProgressProvider>
-				</ModuleNavigationProvider>
-			</SidebarProvider>
+			<main className="h-screen max-h-screen overflow-hidden">
+				<AcademyNav />
+				<SidebarProvider className="h-[calc(100vh-56px)]">
+					<ModuleNavigationProvider moduleNavDataLoader={moduleNavigationLoader}>
+						<ModuleProgressProvider moduleProgressLoader={moduleProgressLoader}>
+							{children}
+						</ModuleProgressProvider>
+					</ModuleNavigationProvider>
+				</SidebarProvider>
+			</main>
 		)
 	} catch (error) {
 		console.error('ModuleLayout: Error rendering module layout:', error)

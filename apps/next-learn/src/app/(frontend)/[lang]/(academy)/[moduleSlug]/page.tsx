@@ -1,14 +1,19 @@
-import { getLessonsByModuleId } from '@/server/content/resources'
-import Link from 'next/link'
 import { generateModuleParams } from '@/server/params/static-params'
 import { getValidatedResource, getLocalizedContent, resolveParams } from '@/utils/localization'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-
+import Balancer from 'react-wrap-balancer'
 // Import UI components
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import components from '@/mdx/components/components'
 import mdxOptions from '@/mdx/mdx-options'
+import { SidebarInset } from '@/components/ui/sidebar'
+import { Section } from '@/components/layout'
+import { Container } from '@/components/layout'
+import { Badge } from '@/components/ui/badge'
+import {
+	AcademySidebar,
+	AcademySidebarSkeleton,
+} from '@/components/academy/sidebar/academy-sidebar'
+import { Suspense } from 'react'
 
 export async function generateStaticParams() {
 	return generateModuleParams()
@@ -30,29 +35,6 @@ export default async function ModulePage({ params }: ModulePageProps) {
 		const moduleResource = await getValidatedResource({
 			slug: moduleSlug,
 			expectedType: 'module',
-		})
-
-		// Fetch all lessons for this module grouped by section
-		const lessonsWithSections = await getLessonsByModuleId(moduleResource.id)
-
-		// Group lessons by sectionId for display
-		const sectionGroups = lessonsWithSections.reduce<Record<string, typeof lessonsWithSections>>(
-			(groups, lesson) => {
-				const sectionId = lesson.sectionId
-				if (!groups[sectionId]) {
-					groups[sectionId] = []
-				}
-				groups[sectionId].push(lesson)
-				return groups
-			},
-			{},
-		)
-
-		// Sort sections by sectionPosition
-		const sortedSectionIds = Object.keys(sectionGroups).sort((a, b) => {
-			const posA = sectionGroups[a]?.[0]?.sectionPosition || 0
-			const posB = sectionGroups[b]?.[0]?.sectionPosition || 0
-			return posA - posB
 		})
 
 		// Get localized title and description
@@ -78,26 +60,53 @@ export default async function ModulePage({ params }: ModulePageProps) {
 			defaultValue: '',
 		})
 
-		return (
-			<div className="container max-w-6xl mx-auto py-8 px-4">
-				<div className="mb-8">
-					<h1 className="text-4xl font-bold mb-4">{title}</h1>
-					{description && <p className="text-xl text-muted-foreground mb-6">{description}</p>}
+		console.log('body', body)
 
-					{/* Display the module body content */}
-					{body && (
-						<div className="prose dark:prose-invert max-w-none mb-8">
-							<MDXRemote
-								source={body}
-								components={components}
-								options={{
-									mdxOptions,
-								}}
-							/>
+		return (
+			<>
+				<Suspense fallback={<AcademySidebarSkeleton course={moduleResource} />}>
+					<AcademySidebar course={moduleResource} lang={lang} />
+				</Suspense>
+				<SidebarInset id="module" className="relative overflow-y-auto pb-12">
+					<Section className="bg-accent/30 border-b relative !bg-grid">
+						<Container className="ds space-y-4 sm:space-y-6 items-center" isUniversity>
+							<h1>{title}</h1>
+							{description && (
+								<p className="text-muted-foreground leading-tight">
+									<Balancer>{description}</Balancer>
+								</p>
+							)}
+							<div className="flex flex-wrap gap-1">
+								<Badge>{5} Chapters</Badge>
+								<Badge variant="secondary">~ {12} hours</Badge>
+								{/* {completedChapters > 0 && (
+								<Badge variant="secondary">
+									{completedChapters}/{totalChapters} Complete
+								</Badge>
+							)}
+							{numOfStudentsEnrolled > 0 && (
+								<Badge variant="secondary">{numOfStudentsEnrolled.toLocaleString()} Students</Badge>
+							)} */}
+							</div>
+						</Container>
+					</Section>
+					<div className="container max-w-6xl mx-auto py-8 px-4">
+						<div className="mb-8">
+							{body && (
+								<div className="prose dark:prose-invert max-w-none mb-8">
+									<MDXRemote
+										source={body}
+										components={components}
+										options={{
+											mdxOptions,
+										}}
+									/>
+								</div>
+							)}
 						</div>
-					)}
-				</div>
-			</div>
+					</div>
+				</SidebarInset>
+			</>
 		)
 	} catch (error) {
 		console.error('ModulePage: Error rendering module page:', error)

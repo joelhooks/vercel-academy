@@ -7,6 +7,7 @@ import { ContentResourceSchema } from '@/schemas/content'
 import type { ContentResource } from '@/schemas/content'
 import { ZodError } from 'zod'
 import { cache } from 'react'
+import { unstable_cacheLife as cacheLife } from 'next/cache'
 
 import 'server-only'
 
@@ -79,6 +80,9 @@ function safelyParseResource(resource: unknown): ContentResource | null {
  * Fetches content modules (type: 'module')
  */
 export async function getModules(): Promise<ContentResource[]> {
+	'use cache'
+	cacheLife('minutes')
+
 	try {
 		const result = await db
 			.select()
@@ -134,6 +138,9 @@ export async function getSectionsByModuleId(moduleId: string): Promise<ContentRe
  * Fetches lessons within a specific section using the relationship table
  */
 export async function getLessonsBySectionId(sectionId: string): Promise<ContentResource[]> {
+	'use cache'
+	cacheLife('minutes')
+
 	try {
 		const result = await db
 			.select({
@@ -172,6 +179,9 @@ export async function getLessonsByModuleId(
 ): Promise<
 	Array<ContentResource & { sectionId: string; sectionTitle: string; sectionPosition: number }>
 > {
+	'use cache'
+	cacheLife('minutes')
+
 	try {
 		// First, get all sections for this module
 		const sections = await getSectionsByModuleId(moduleId)
@@ -264,7 +274,9 @@ export async function getLessonsByModuleId(
  * Use this for internal references; for user-facing URLs prefer getContentResourceBySlug
  */
 export async function getContentResourceById(resourceId: string): Promise<ContentResource | null> {
-	console.log('resourceId', resourceId)
+	'use cache'
+	cacheLife('minutes')
+
 	try {
 		const result = await db
 			.select()
@@ -292,6 +304,9 @@ export async function getContentResourceById(resourceId: string): Promise<Conten
  * Use this for URL paths and user-facing identifiers
  */
 export async function getContentResourceBySlug(slug: string): Promise<ContentResource | null> {
+	'use cache'
+	cacheLife('minutes')
+
 	try {
 		// First try: direct match on fields->>'slug'
 		let result = await db
@@ -335,6 +350,9 @@ export async function getContentResourceBySlug(slug: string): Promise<ContentRes
  * All resources are properly ordered by their position values.
  */
 export const getModuleNavigationData = cache(async (moduleSlugOrId: string) => {
+	'use cache'
+	cacheLife('minutes')
+
 	// Fetch the module
 	const moduleResource = await getContentResourceBySlug(moduleSlugOrId)
 

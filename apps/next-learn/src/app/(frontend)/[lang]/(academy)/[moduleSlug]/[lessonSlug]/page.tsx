@@ -13,6 +13,9 @@ import '@/styles/hljs/github-dark.css'
 
 import components from '@/mdx/components/components'
 import mdxOptions from '@/mdx/mdx-options'
+import { SidebarInset } from '@/components/ui/sidebar'
+import { AcademySidebar } from '@/components/academy/sidebar/academy-sidebar'
+import { AcademySidebarSkeleton } from '@/components/academy/sidebar/academy-sidebar'
 
 export async function generateStaticParams() {
 	return generateNewLessonParams()
@@ -70,65 +73,72 @@ export default async function LessonPage({ params }: LessonPageProps) {
 		}) || ''
 
 	return (
-		<div className="container mx-auto py-8 px-4 max-w-4xl">
-			{/* Simple Breadcrumb */}
-			<div className="mb-6 flex items-center text-sm">
-				<Link href={`/${lang}/${moduleSlug}`} className="text-primary hover:underline">
-					{moduleTitle}
-				</Link>
-				<span className="mx-2">/</span>
-				<span className="font-medium text-foreground">{lessonTitle}</span>
-			</div>
-
-			{/* Lesson title */}
-			<h1 className="text-3xl font-bold mb-6">{lessonTitle}</h1>
-
-			{/* Main content */}
-			<div className="prose dark:prose-invert max-w-none mb-8">
-				<MDXRemote
-					source={lessonContent}
-					components={components}
-					options={{
-						mdxOptions,
-					}}
-				/>
-			</div>
-
-			{/* Completion button for logged in users */}
-			{userId && (
-				<div className="mb-8 flex justify-center">
-					<Suspense fallback={<Button disabled>Loading progress...</Button>}>
-						<LessonCompleteButton lessonId={lessonResource.id} />
-					</Suspense>
-				</div>
-			)}
-
-			<Separator className="my-6" />
-
-			{/* Navigation buttons - these will be automatically populated by layout based on the navigation context */}
-			<div className="flex justify-between">
-				<div>
-					<Button variant="outline" asChild>
-						<Link href={`/${lang}/${moduleSlug}`} className="flex items-center">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								className="h-4 w-4 mr-2"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth={2}
-									d="M10 19l-7-7m0 0l7-7m-7 7h18"
-								/>
-							</svg>
-							Back to module
+		<>
+			<Suspense fallback={<AcademySidebarSkeleton course={moduleResource} />}>
+				<AcademySidebar course={moduleResource} lang={lang} />
+			</Suspense>
+			<SidebarInset id="lesson" className="relative overflow-y-auto pb-12">
+				<div className="container mx-auto py-8 px-4 max-w-4xl">
+					{/* Simple Breadcrumb */}
+					<div className="mb-6 flex items-center text-sm">
+						<Link href={`/${lang}/${moduleSlug}`} className="text-primary hover:underline">
+							{moduleTitle}
 						</Link>
-					</Button>
+						<span className="mx-2">/</span>
+						<span className="font-medium text-foreground">{lessonTitle}</span>
+					</div>
+
+					{/* Lesson title */}
+					<h1 className="text-3xl font-bold mb-6">{lessonTitle}</h1>
+
+					{/* Main content */}
+					<div className="prose dark:prose-invert max-w-none mb-8">
+						<MDXRemote
+							source={lessonContent}
+							components={components}
+							options={{
+								mdxOptions,
+							}}
+						/>
+					</div>
+
+					{/* Completion button for logged in users */}
+					{userId && (
+						<div className="mb-8 flex justify-center">
+							<Suspense fallback={<Button disabled>Loading progress...</Button>}>
+								<LessonCompleteButton lessonId={lessonResource.id} />
+							</Suspense>
+						</div>
+					)}
+
+					<Separator className="my-6" />
+
+					{/* Navigation buttons - these will be automatically populated by layout based on the navigation context */}
+					<div className="flex justify-between">
+						<div>
+							<Button variant="outline" asChild>
+								<Link href={`/${lang}/${moduleSlug}`} className="flex items-center">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										className="h-4 w-4 mr-2"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M10 19l-7-7m0 0l7-7m-7 7h18"
+										/>
+									</svg>
+									Back to module
+								</Link>
+							</Button>
+						</div>
+					</div>
 				</div>
-			</div>
-		</div>
+			</SidebarInset>
+		</>
 	)
 }

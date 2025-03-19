@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
+import { SessionProvider } from 'next-auth/react'
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 
 const geistMono = Geist_Mono({
@@ -24,15 +25,17 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className={`${geist.className} ${geistMono.variable} antialiased scroll-smooth`}>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="system"
-					enableSystem
-					disableTransitionOnChange
-				>
-					{children}
-					<Toaster />
-				</ThemeProvider>
+				<SessionProvider>
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem
+						disableTransitionOnChange
+					>
+						{children}
+						<Toaster />
+					</ThemeProvider>
+				</SessionProvider>
 			</body>
 		</html>
 	)

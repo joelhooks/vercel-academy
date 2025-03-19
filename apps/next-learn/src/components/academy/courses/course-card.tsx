@@ -5,7 +5,7 @@ import { ArrowUpRight } from 'lucide-react'
 // import { CourseBook } from '@/components/academy/courses/course-book'
 import { Suspense } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { getContentResourceById, getLessonsByModuleId } from '@/server/content/resources'
+import { getLessonsByModuleId } from '@/server/content/resources'
 
 import Link from 'next/link'
 
@@ -29,7 +29,7 @@ const getLocalizedString = (
 export const CourseCard = async ({ module, lang }: Props) => {
 	const moduleLessons = await getLessonsByModuleId(module.id)
 
-	console.log({ moduleLessons, module })
+	console.log({ module })
 
 	// Create path with or without language prefix
 	const langPrefix = lang && lang !== defaultLocale ? `/${lang}` : ''

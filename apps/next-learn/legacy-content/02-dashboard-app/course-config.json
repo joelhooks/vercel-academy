@@ -1,5 +1,5 @@
 {
-	"id": "dashboard-app",
+	"id": "app-router",
 	"type": "course",
 	"introduction": "index.mdx",
 	"resources": [

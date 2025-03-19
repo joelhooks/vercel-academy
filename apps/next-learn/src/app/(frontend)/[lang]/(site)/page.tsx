@@ -1,22 +1,8 @@
 import { getModules } from '@/server/content/resources'
-import { getLocalizedContent } from '@/utils/localization'
-import Link from 'next/link'
 
 // Import shadcn UI components
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Container, Section } from '@/components/layout'
-import { SignInCtaSkeleton } from '@/components/sign-in-cta'
-import { Suspense } from 'react'
 import { SignInCta } from '@/components/sign-in-cta'
-import { CourseCardSkeleton } from '@/components/academy/courses/course-card'
 import { CourseCard } from '@/components/academy/courses/course-card'
 
 interface HomePageProps {
@@ -30,7 +16,12 @@ export default async function HomePage({ params }: HomePageProps) {
 	const resolvedParams = await Promise.resolve(params)
 	const { lang } = resolvedParams
 
+	// get modules uses `use cache`
 	const modules = await getModules()
+
+	// previously the login and module cards below where wrapped in Suspense
+	// but they aren't dynamic and server rendering prevents any loading jank
+	// so we're just going to render them directly
 
 	return (
 		<main>
@@ -49,9 +40,9 @@ export default async function HomePage({ params }: HomePageProps) {
 						>
 							<path d="M577.344 0L1154.69 1000H0L577.344 0Z" fill="currentColor" />
 						</svg>
-						<p>Academy</p>
+						<p>Vercel Academy</p>
 					</div>
-					<h1 className="sr-only">Welcome to Vercel University</h1>
+					<h1 className="sr-only">Welcome to Vercel Academy</h1>
 					<p className="max-w-prose">
 						Go from beginner to expert by learning the foundations of Vercel and Next.js and
 						building a fully functional demo website that uses all the latest features.
@@ -61,13 +52,9 @@ export default async function HomePage({ params }: HomePageProps) {
 
 			<Section>
 				<Container className="gap-4 flex flex-col md:grid md:grid-cols-2">
-					<Suspense fallback={<SignInCtaSkeleton />}>
-						<SignInCta />
-					</Suspense>
+					<SignInCta />
 					{modules.map((module) => (
-						<Suspense key={module.id} fallback={<CourseCardSkeleton />}>
-							<CourseCard module={module} lang={lang} />
-						</Suspense>
+						<CourseCard key={module.id} module={module} lang={lang} />
 					))}
 				</Container>
 			</Section>

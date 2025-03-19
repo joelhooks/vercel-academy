@@ -1,9 +1,7 @@
 import { type ReactNode } from 'react'
 import { getContentResourceBySlug, getModuleNavigationData } from '@/server/content/resources'
-import { ModuleProgressProvider } from '@/components/providers/module-progress-provider'
 import { ModuleNavigationProvider } from '@/components/providers/module-navigation-provider'
 import { auth } from '@/auth'
-import { getProgressForModule } from '@/server/progress/user-progress'
 import { notFound } from 'next/navigation'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { resolveParams } from '@/utils/localization'
@@ -42,11 +40,6 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 		// Use the function to get complete navigation data
 		const navigationData = await getModuleNavigationData(moduleResource.id)
 
-		// Get user progress for this module if logged in
-		const moduleProgressLoader = userId
-			? getProgressForModule(userId, moduleResource.id)
-			: Promise.resolve(null)
-
 		// Use the navigation data
 		const moduleNavigationLoader = Promise.resolve({
 			id: moduleResource.id,
@@ -80,9 +73,7 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 				<AcademyNav />
 				<SidebarProvider className="h-[calc(100vh-56px)]">
 					<ModuleNavigationProvider moduleNavDataLoader={moduleNavigationLoader}>
-						<ModuleProgressProvider moduleProgressLoader={moduleProgressLoader}>
-							{children}
-						</ModuleProgressProvider>
+						{children}
 					</ModuleNavigationProvider>
 				</SidebarProvider>
 			</main>

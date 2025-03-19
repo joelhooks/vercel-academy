@@ -1,14 +1,17 @@
 'use server'
 
 import db from '@/db'
-import { resourceProgress } from '@/db/schema'
-import { and, eq } from 'drizzle-orm'
+import { contentResource, resourceProgress } from '@/db/schema'
+import { and, eq, inArray, sql } from 'drizzle-orm'
 import {
 	ResourceProgressSchema,
 	formatProgressPercentage,
 	hasStartedResource,
 } from '@/schemas/progress'
 import { z } from 'zod'
+import { getLessonsByModuleId } from '../content/resources'
+
+import 'server-only'
 
 // Define the type for the result of ResourceProgressSchema.parse
 type ResourceProgress = z.infer<typeof ResourceProgressSchema>
@@ -16,8 +19,8 @@ type ResourceProgress = z.infer<typeof ResourceProgressSchema>
 // Define types for module progress
 interface CompletedLesson {
 	resourceId: string
-	completedAt: Date
-	userId: string
+	isComplete: boolean | null
+	userId: string | null
 }
 
 export interface ModuleProgress {
@@ -26,6 +29,7 @@ export interface ModuleProgress {
 	percentCompleted: number
 	completedLessonsCount: number
 	totalLessonsCount: number
+	userId: string | null
 }
 
 // Local interface for progress tracking
@@ -65,30 +69,59 @@ export async function getProgressForModule(
 	userId: string,
 	moduleId: string,
 ): Promise<ModuleProgress> {
-	// In a real implementation, this would query a database for all lessons in module
-	// and check completion status
+	const lessons = await getLessonsByModuleId(moduleId)
 
-	// For demonstration purposes, we'll return a dummy object
-	const completedLessons = progressStore
-		.filter((p) => p.userId === userId && p.resourceId.startsWith(moduleId))
-		.map((p) => ({
-			resourceId: p.resourceId,
-			completedAt: p.completedAt,
-			userId: p.userId,
-		}))
+	const resourceProgressForLessons = await db.query.resourceProgress.findMany({
+		where: and(
+			eq(resourceProgress.userId, userId),
+			inArray(
+				resourceProgress.resourceId,
+				lessons.map((lesson) => lesson.id),
+			),
+		),
+	})
 
-	// In a real implementation, you would count the total number of lessons in the module
-	const totalLessonsCount = 10 // Example value
+	const completedLessons = resourceProgressForLessons.filter((progress) => progress.isComplete)
+	const completedLessonIds = new Set(completedLessons.map((lesson) => lesson.resourceId))
+
+	const totalLessonsCount = lessons.length
 	const completedLessonsCount = completedLessons.length
 	const percentCompleted =
 		totalLessonsCount > 0 ? Math.round((completedLessonsCount / totalLessonsCount) * 100) : 0
 
+	// Find the next resource
+	let nextResource: string | null = null
+
+	// Find the last completed lesson's index
+	const lastCompletedLessonIndex = lessons.reduce((lastIndex, lesson, currentIndex) => {
+		return completedLessonIds.has(lesson.id) ? currentIndex : lastIndex
+	}, -1)
+
+	if (lastCompletedLessonIndex < lessons.length - 1) {
+		// If not at the end, return next lesson in sequence
+		const nextLesson = lessons[lastCompletedLessonIndex + 1]
+		nextResource = nextLesson ? nextLesson.id : null
+	} else if (lastCompletedLessonIndex === lessons.length - 1) {
+		// At the end, look for first uncompleted lesson
+		const firstUncompletedLesson = lessons.find((lesson) => !completedLessonIds.has(lesson.id))
+		nextResource = firstUncompletedLesson?.id || null
+	}
+
+	if (nextResource) {
+		const result = await db.execute(
+			sql`SELECT ${contentResource.fields}->>'slug' as slug FROM ${contentResource} WHERE id = ${nextResource}`,
+		)
+
+		nextResource = (result.rows[0]?.slug as string) ?? nextResource
+	}
+
 	return {
 		completedLessons,
-		nextResource: null, // This would be determined from module structure
+		nextResource,
 		percentCompleted,
 		completedLessonsCount,
 		totalLessonsCount,
+		userId,
 	}
 }
 
@@ -143,6 +176,32 @@ export async function getAllProgressForUser(userId: string): Promise<ResourcePro
 		console.error(`Error fetching all progress for user "${userId}":`, error)
 		return []
 	}
+}
+
+export async function addProgressToResource({
+	userId,
+	resourceId,
+}: {
+	userId: string
+	resourceId: string
+}): Promise<void> {
+	await db.insert(resourceProgress).values({
+		userId,
+		resourceId,
+		isComplete: true,
+	})
+}
+
+export async function removeProgressFromResource({
+	userId,
+	resourceId,
+}: {
+	userId: string
+	resourceId: string
+}): Promise<void> {
+	await db
+		.delete(resourceProgress)
+		.where(and(eq(resourceProgress.userId, userId), eq(resourceProgress.resourceId, resourceId)))
 }
 
 /**

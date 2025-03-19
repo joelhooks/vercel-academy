@@ -9,17 +9,13 @@ const EXCLUDED_PATHS = /^(\/api\/|\/_next\/|\/favicon\.ico|.*\.(jpg|png|gif|svg|
 export function middleware(request: NextRequest) {
 	const pathname = request.nextUrl.pathname
 
-	console.log('pathname', pathname)
-
 	// Skip processing for excluded paths
 	if (EXCLUDED_PATHS.test(pathname)) {
-		console.log('excluded path')
 		return NextResponse.next()
 	}
 
 	// Case 1: /en/* routes - redirect to /* (root paths)
 	if (pathname.startsWith(`/${defaultLocale}/`)) {
-		console.log('case 1')
 		const newUrl = new URL(request.url)
 		// Remove the /en/ prefix and clean up the path
 		newUrl.pathname = pathname.replace(`/${defaultLocale}/`, '/').replace('//', '/')

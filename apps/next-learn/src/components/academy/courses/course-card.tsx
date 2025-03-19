@@ -29,8 +29,6 @@ const getLocalizedString = (
 export const CourseCard = async ({ module, lang }: Props) => {
 	const moduleLessons = await getLessonsByModuleId(module.id)
 
-	console.log({ module })
-
 	// Create path with or without language prefix
 	const langPrefix = lang && lang !== defaultLocale ? `/${lang}` : ''
 

@@ -14,6 +14,9 @@ import {
 	AcademySidebarSkeleton,
 } from '@/components/academy/sidebar/academy-sidebar'
 import { Suspense } from 'react'
+import { ModuleProgressProvider } from '@/components/providers/module-progress-provider'
+import { getProgressForModule } from '@/server/progress/user-progress'
+import { auth } from '@/auth'
 
 export async function generateStaticParams() {
 	return generateModuleParams()
@@ -31,11 +34,20 @@ export default async function ModulePage({ params }: ModulePageProps) {
 		// Resolve and destructure params
 		const { lang, moduleSlug } = await resolveParams(params)
 
+		// Get current user if authenticated
+		const session = await auth()
+		const userId = session?.user?.id
+
 		// Validate the module resource
 		const moduleResource = await getValidatedResource({
 			slug: moduleSlug,
 			expectedType: 'module',
 		})
+
+		// Get user progress for this module
+		const moduleProgressLoader = userId
+			? getProgressForModule(userId, moduleResource.id)
+			: Promise.resolve(null)
 
 		// Get localized title and description
 		const title = getLocalizedContent({
@@ -60,51 +72,51 @@ export default async function ModulePage({ params }: ModulePageProps) {
 			defaultValue: '',
 		})
 
-		console.log('body', body)
-
 		return (
 			<>
 				<Suspense fallback={<AcademySidebarSkeleton course={moduleResource} />}>
 					<AcademySidebar course={moduleResource} lang={lang} />
 				</Suspense>
 				<SidebarInset id="module" className="relative overflow-y-auto pb-12">
-					<Section className="bg-accent/30 border-b relative !bg-grid">
-						<Container className="ds space-y-4 sm:space-y-6 items-center" isUniversity>
-							<h1>{title}</h1>
-							{description && (
-								<p className="text-muted-foreground leading-tight">
-									<Balancer>{description}</Balancer>
-								</p>
-							)}
-							<div className="flex flex-wrap gap-1">
-								<Badge>{5} Chapters</Badge>
-								<Badge variant="secondary">~ {12} hours</Badge>
-								{/* {completedChapters > 0 && (
-								<Badge variant="secondary">
-									{completedChapters}/{totalChapters} Complete
-								</Badge>
-							)}
-							{numOfStudentsEnrolled > 0 && (
-								<Badge variant="secondary">{numOfStudentsEnrolled.toLocaleString()} Students</Badge>
-							)} */}
-							</div>
-						</Container>
-					</Section>
-					<div className="container max-w-6xl mx-auto py-8 px-4">
-						<div className="mb-8">
-							{body && (
-								<div className="prose dark:prose-invert max-w-none mb-8">
-									<MDXRemote
-										source={body}
-										components={components}
-										options={{
-											mdxOptions,
-										}}
-									/>
+					<ModuleProgressProvider moduleProgressLoader={moduleProgressLoader}>
+						<Section className="bg-accent/30 border-b relative !bg-grid">
+							<Container className="ds space-y-4 sm:space-y-6 items-center" isUniversity>
+								<h1>{title}</h1>
+								{description && (
+									<p className="text-muted-foreground leading-tight">
+										<Balancer>{description}</Balancer>
+									</p>
+								)}
+								<div className="flex flex-wrap gap-1">
+									<Badge>{5} Chapters</Badge>
+									<Badge variant="secondary">~ {12} hours</Badge>
+									{/* {completedChapters > 0 && (
+									<Badge variant="secondary">
+										{completedChapters}/{totalChapters} Complete
+									</Badge>
+								)}
+								{numOfStudentsEnrolled > 0 && (
+									<Badge variant="secondary">{numOfStudentsEnrolled.toLocaleString()} Students</Badge>
+								)} */}
 								</div>
-							)}
+							</Container>
+						</Section>
+						<div className="container max-w-6xl mx-auto py-8 px-4">
+							<div className="mb-8">
+								{body && (
+									<div className="prose dark:prose-invert max-w-none mb-8">
+										<MDXRemote
+											source={body}
+											components={components}
+											options={{
+												mdxOptions,
+											}}
+										/>
+									</div>
+								)}
+							</div>
 						</div>
-					</div>
+					</ModuleProgressProvider>
 				</SidebarInset>
 			</>
 		)

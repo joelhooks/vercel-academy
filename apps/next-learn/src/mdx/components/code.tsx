@@ -31,7 +31,6 @@ export function Code(props: {
 		return props.code
 	}, [props.codeContent, props.code])
 
-	console.log(props.children)
 	return (
 		<CodeBlock defaultValue={props.language}>
 			<CodeBlockHeader>

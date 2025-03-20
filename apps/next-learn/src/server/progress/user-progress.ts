@@ -20,7 +20,7 @@ type ResourceProgress = z.infer<typeof ResourceProgressSchema>
 interface CompletedLesson {
 	resourceId: string
 	isComplete: boolean | null
-	userId: string | null
+	userId?: string | null
 }
 
 export interface ModuleProgress {
@@ -29,7 +29,7 @@ export interface ModuleProgress {
 	percentCompleted: number
 	completedLessonsCount: number
 	totalLessonsCount: number
-	userId: string | null
+	userId?: string | null
 }
 
 // Local interface for progress tracking
@@ -65,21 +65,26 @@ export async function checkResourceComplete(progress: ProgressRecord | null): Pr
 /**
  * Get all progress for a module and calculate stats
  */
-export async function getProgressForModule(
-	userId: string,
-	moduleId: string,
-): Promise<ModuleProgress> {
+export async function getProgressForModule({
+	userId,
+	moduleId,
+}: {
+	userId?: string
+	moduleId: string
+}): Promise<ModuleProgress> {
 	const lessons = await getLessonsByModuleId(moduleId)
 
-	const resourceProgressForLessons = await db.query.resourceProgress.findMany({
-		where: and(
-			eq(resourceProgress.userId, userId),
-			inArray(
-				resourceProgress.resourceId,
-				lessons.map((lesson) => lesson.id),
-			),
-		),
-	})
+	const resourceProgressForLessons = userId
+		? await db.query.resourceProgress.findMany({
+				where: and(
+					eq(resourceProgress.userId, userId),
+					inArray(
+						resourceProgress.resourceId,
+						lessons.map((lesson) => lesson.id),
+					),
+				),
+			})
+		: []
 
 	const completedLessons = resourceProgressForLessons.filter((progress) => progress.isComplete)
 	const completedLessonIds = new Set(completedLessons.map((lesson) => lesson.resourceId))

@@ -96,5 +96,5 @@ export function getLocalizedContent<T>({
  * @returns The resolved params object
  */
 export async function resolveParams<T>(params: T): Promise<T> {
-	return await Promise.resolve(params)
+	return await params
 }

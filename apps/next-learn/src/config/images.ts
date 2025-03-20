@@ -2,8 +2,9 @@
  * Configuration for images used throughout the application
  */
 
-// Base URL for images loaded by MDX components
-export const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || '/images/'
+import { env } from '@/env.mjs'
+
+export const IMAGE_BASE_URL = `https://${env.IMAGE_BLOB_STORE}`
 
 // Default image dimensions
 export const DEFAULT_IMAGE_SIZES = {

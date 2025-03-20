@@ -12,9 +12,9 @@ export function generateStaticParams() {
 
 interface LangLayoutProps {
 	children: ReactNode
-	params: {
+	params: Promise<{
 		lang: string
-	}
+	}>
 }
 
 export default async function LangLayout({ children, params }: LangLayoutProps) {

@@ -6,9 +6,9 @@ import { SignInCta } from '@/components/sign-in-cta'
 import { CourseCard } from '@/components/academy/courses/course-card'
 
 interface HomePageProps {
-	params: {
+	params: Promise<{
 		lang: string
-	}
+	}>
 }
 
 export default async function HomePage({ params }: HomePageProps) {

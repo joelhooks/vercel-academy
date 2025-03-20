@@ -10,17 +10,39 @@
 */
 
 :root {
-	--color-code-background: #0d1117;
+	--color-code-background: hsl(0, 0%, 10%);
 	--color-text-weak: #8b949e;
 	--color-inserted-line: rgba(126, 231, 135, 0.15);
 	--color-deleted-line: rgba(255, 123, 114, 0.15);
 	--color-highlighted-line: rgba(126, 231, 135, 0.1);
 	--color-highlighted-line-indicator: #7ee787;
+
+	/* Design system alignments */
+	--ds-background-100: hsl(0, 0%, 6%);
+	--ds-background-200: #161b22;
+	--ds-gray-200: rgba(139, 148, 158, 0.1);
+	--ds-gray-300: #30363d;
+	--ds-gray-400: #30363d;
+	--ds-gray-600: #8b949e;
+	--ds-gray-900: #8b949e;
+	--ds-gray-1000: #c9d1d9;
+
+	/* Syntax highlighting colors */
+	--ds-pink-900: #ff7b72; /* keywords */
+	--ds-blue-900: #79c0ff; /* constants, numbers */
+	--ds-green-900: #7ee787; /* strings, tags */
+	--ds-purple-900: #d2a8ff; /* functions */
+	--ds-amber-900: #ffa657; /* parameters, built-ins */
+	--ds-red-900: #ff7b72; /* deleted, properties */
+
+	/* Focus and interaction */
+	--ds-blue-300: rgba(56, 139, 253, 0.1);
+	--ds-focus-ring: 0 0 0 2px #1f6feb;
 }
 
 .hljs {
-	color: #c9d1d9;
-	background: #0d1117;
+	color: var(--ds-gray-1000);
+	background: var(--ds-background-100);
 }
 
 .hljs-doctag,
@@ -31,18 +53,18 @@
 .hljs-type,
 .hljs-variable.language_ {
 	/* prettylights-syntax-keyword */
-	color: #ff7b72;
+	color: var(--ds-pink-900);
 }
 
+.hljs-attr,
 .hljs-title,
 .hljs-title.class_,
 .hljs-title.class_.inherited__,
 .hljs-title.function_ {
 	/* prettylights-syntax-entity */
-	color: #d2a8ff;
+	color: var(--ds-purple-900);
 }
 
-.hljs-attr,
 .hljs-attribute,
 .hljs-literal,
 .hljs-meta,
@@ -53,27 +75,27 @@
 .hljs-selector-class,
 .hljs-selector-id {
 	/* prettylights-syntax-constant */
-	color: #79c0ff;
+	color: var(--ds-blue-900);
 }
 
 .hljs-regexp,
 .hljs-string,
 .hljs-meta .hljs-string {
 	/* prettylights-syntax-string */
-	color: #a5d6ff;
+	color: var(--ds-green-900);
 }
 
 .hljs-built_in,
 .hljs-symbol {
 	/* prettylights-syntax-variable */
-	color: #ffa657;
+	color: var(--ds-amber-900);
 }
 
 .hljs-comment,
 .hljs-code,
 .hljs-formula {
 	/* prettylights-syntax-comment */
-	color: #8b949e;
+	color: var(--ds-gray-900);
 }
 
 .hljs-name,
@@ -81,12 +103,12 @@
 .hljs-selector-tag,
 .hljs-selector-pseudo {
 	/* prettylights-syntax-entity-tag */
-	color: #7ee787;
+	color: var(--ds-green-900);
 }
 
 .hljs-subst {
 	/* prettylights-syntax-storage-modifier-import */
-	color: #c9d1d9;
+	color: var(--ds-gray-1000);
 }
 
 .hljs-section {
@@ -102,13 +124,13 @@
 
 .hljs-emphasis {
 	/* prettylights-syntax-markup-italic */
-	color: #c9d1d9;
+	color: var(--ds-gray-1000);
 	font-style: italic;
 }
 
 .hljs-strong {
 	/* prettylights-syntax-markup-bold */
-	color: #c9d1d9;
+	color: var(--ds-gray-1000);
 	font-weight: bold;
 }
 
@@ -139,7 +161,7 @@
 
 pre,
 pre code {
-	background-color: var(--color-code-background);
+	background-color: var(--ds-background-100);
 
 	direction: ltr;
 	text-align: left;
@@ -152,25 +174,24 @@ pre code {
 }
 
 pre {
-	padding: 0.5rem 1rem;
-
+	padding: 0;
 	overflow-x: auto;
+	position: relative;
 }
 
 pre > code {
 	float: left;
 	min-width: 100%;
+	font-size: 12px;
+	padding: 0 0px 0.1rem 0;
 }
 
 .code-line {
-	min-width: 100%;
-	padding-left: 12px;
-	padding-right: 12px;
-	margin-left: -12px;
-	margin-right: -12px;
-	border-left: 4px solid transparent; /* prepare for highlighted code-lines */
-
+	width: 100%;
+	padding-left: 24px;
+	border-left: 2px solid transparent; /* prepare for highlighted code-lines */
 	display: inline-block;
+	vertical-align: top;
 }
 
 .code-line.inserted {
@@ -182,8 +203,8 @@ pre > code {
 }
 
 .highlighted-code-line {
-	background-color: var(--color-highlighted-line);
-	border-left: 4px solid var(--color-highlighted-line-indicator);
+	background-color: var(--ds-blue-400);
+	border-left: 2px solid var(--ds-blue-900);
 }
 
 .numbered-code-line::before {

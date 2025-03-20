@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ChapterCompletionButton } from './chapter-completion-button'
 import { useModuleProgress } from '@/components/providers/module-progress-provider'
 
-interface ChapterCompletionProps {
+export interface ChapterCompletionProps {
 	lessonId: string
 	moduleSlug: string
 	currentLessonNumber: number

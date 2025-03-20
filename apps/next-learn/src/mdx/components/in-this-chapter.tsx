@@ -1,4 +1,6 @@
 import React from 'react'
+import { cn } from '@/lib/utils'
+import styles from './in-this-chapter.module.css'
 
 // Define the icon names we support
 export type IconName =
@@ -299,21 +301,30 @@ const Icon = ({ name }: { name: IconName }) => {
 
 export function InThisChapter({ topics }: { topics: Topic[] }): React.ReactElement {
 	return (
-		<div className="not-prose mb-4 rounded-[12px] md:mx-[-64px] md:my-12 md:p-4 md:px-[64px] md:py-12 md:bg-blue-50 dark:md:bg-blue-950">
-			<h3 className="pb-1 text-xl md:text-2xl font-semibold">In this chapter...</h3>
-			<p className="text-sm md:text-base text-gray-700 dark:text-gray-300 m-0">
+		<div
+			className={cn(
+				'not-prose mb-4 rounded-[12px] md:mx-[-64px] md:my-12 md:p-4 md:px-[64px] md:py-12 bg-secondary',
+				styles.wrapper,
+			)}
+		>
+			<div className="pb-1 text-xl md:text-2xl font-semibold text-secondary-foreground">
+				In this chapter...
+			</div>
+			<p className="text-sm md:text-base text-muted-foreground m-0">
 				Here are the topics we&apos;ll cover
 			</p>
-			<div className="mx-auto mt-4 flex w-full max-w-[960px] flex-col rounded-md px-4 py-2 shadow-md md:mt-8 bg-white dark:bg-gray-800">
+			<div className="bg-card mx-auto mt-4 flex w-full max-w-[960px] flex-col rounded-md px-4 py-2 md:mt-8">
 				{topics.map((topic) => (
 					<div
-						className="flex gap-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700 last-of-type:border-0"
+						className="flex gap-4 px-4 py-3 border-b border-border last-of-type:border-0"
 						key={topic.description}
 					>
-						<div className="flex-shrink-0 mt-1 text-blue-600 dark:text-blue-400">
+						<div className="flex-shrink-0 mt-1 text-muted-foreground">
 							<Icon name={topic.icon} />
 						</div>
-						<div className="text-sm md:text-base leading-6">
+						<div
+							className={cn('text-sm md:text-base leading-6 text-muted-foreground', styles.content)}
+						>
 							<span dangerouslySetInnerHTML={{ __html: topic.description }} />
 						</div>
 					</div>

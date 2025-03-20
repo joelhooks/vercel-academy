@@ -3,12 +3,14 @@
 import * as Collapsible from '@radix-ui/react-collapsible'
 import { Button } from '@/components/ui/button'
 import { useState, type JSX } from 'react'
+import { cn } from '@/lib/utils'
+import styles from './reveal.module.css'
 
 export function Reveal({ children }: { children: React.ReactNode }): JSX.Element {
 	const [show, setShow] = useState(false)
 
 	return (
-		<div className="bg-blue-50 dark:bg-blue-950 -mx-5 mb-8 p-[21px] md:-mx-[62px] md:rounded-[16px] md:p-4 md:px-[62px] md:py-12">
+		<div className="-mx-5 mb-8 p-[21px] md:-mx-[62px] md:rounded-[16px] md:p-4 md:px-[62px] md:py-12">
 			<Collapsible.Root onOpenChange={setShow} open={show}>
 				<Collapsible.Trigger asChild>
 					<Button
@@ -52,8 +54,13 @@ export function Reveal({ children }: { children: React.ReactNode }): JSX.Element
 						{show ? 'Hide' : 'Reveal'} the solution
 					</Button>
 				</Collapsible.Trigger>
-				<Collapsible.Content className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up overflow-hidden transition-all">
-					<div className="pt-4">{children}</div>
+				<Collapsible.Content
+					className={cn(
+						'data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up overflow-hidden transition-all pt-4',
+						styles.content,
+					)}
+				>
+					{children}
 				</Collapsible.Content>
 			</Collapsible.Root>
 		</div>

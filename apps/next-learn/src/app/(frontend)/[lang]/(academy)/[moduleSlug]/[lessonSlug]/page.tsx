@@ -1,8 +1,7 @@
 import Link from 'next/link'
-import { auth } from '@/auth'
 import { Suspense } from 'react'
 import { generateNewLessonParams } from '@/server/params/static-params'
-import { getValidatedResource, getLocalizedContent, resolveParams } from '@/utils/localization'
+import { getValidatedResource, getLocalizedContent } from '@/utils/localization'
 import type { ResourceWithFields } from '@/utils/localization'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 // Import shadcn UI components
@@ -16,7 +15,6 @@ import mdxOptions from '@/mdx/mdx-options'
 import { SidebarInset } from '@/components/ui/sidebar'
 import { AcademySidebar } from '@/components/academy/sidebar/academy-sidebar'
 import { AcademySidebarSkeleton } from '@/components/academy/sidebar/academy-sidebar'
-import { ChapterCompletion } from '@/components/academy/chapters/chapter-completion'
 import { ChapterCompletionSkeleton } from '@/components/academy/chapters/chapter-completion'
 import { ChapterProgress } from '@/components/academy/chapters/chapter-progress'
 

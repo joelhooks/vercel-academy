@@ -5,7 +5,6 @@ import {
 	CodeBlockFilename,
 	CodeBlockHeader,
 } from '@/components/ui/code-block'
-import { SiTypescript } from '@icons-pack/react-simple-icons'
 import React, { useMemo } from 'react'
 
 export function Code(props: {
@@ -32,7 +31,7 @@ export function Code(props: {
 	}, [props.codeContent, props.code])
 
 	return (
-		<CodeBlock defaultValue={props.language}>
+		<CodeBlock defaultValue={props.language} className="">
 			<CodeBlockHeader>
 				<CodeBlockFilename key={props.language} value={props.language}>
 					{props.filename}
@@ -43,10 +42,7 @@ export function Code(props: {
 					onError={() => console.error(`Failed to copy "${props.language}" to clipboard`)}
 				/>
 			</CodeBlockHeader>
-			<CodeBlockHeader>
-				<CodeBlockFilename icon={SiTypescript} value={props.filename} />
-			</CodeBlockHeader>
-			<pre className="not-prose overflow-x-auto">{props.children}</pre>
+			<pre className="not-prose overflow-x-auto py-3">{props.children}</pre>
 		</CodeBlock>
 	)
 }

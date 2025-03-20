@@ -23,19 +23,20 @@ import {
 
 import { SignInButton } from '@/components/sign-in-button'
 import { User } from 'next-auth'
+import { useSession } from 'next-auth/react'
+interface NavUserProps {}
 
-interface NavUserProps {
-	user?: User | null
-}
-
-export function NavUser({ user }: NavUserProps) {
+export function NavUser({}: NavUserProps) {
 	const { isMobile } = useSidebar()
+	const { data: session, status } = useSession()
 
-	if (!user) {
+	const user = session?.user
+
+	if (status === 'loading') {
 		return (
 			<SidebarMenu>
 				<SidebarMenuItem>
-					<SignInButton className="w-full" />
+					<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
 				</SidebarMenuItem>
 			</SidebarMenu>
 		)
@@ -45,7 +46,7 @@ export function NavUser({ user }: NavUserProps) {
 		return (
 			<SidebarMenu>
 				<SidebarMenuItem>
-					<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
+					<SignInButton className="w-full" />
 				</SidebarMenuItem>
 			</SidebarMenu>
 		)
@@ -87,6 +88,16 @@ export function NavUser({ user }: NavUserProps) {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
+			</SidebarMenuItem>
+		</SidebarMenu>
+	)
+}
+
+export const NavUserSkeleton = () => {
+	return (
+		<SidebarMenu>
+			<SidebarMenuItem>
+				<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
 			</SidebarMenuItem>
 		</SidebarMenu>
 	)

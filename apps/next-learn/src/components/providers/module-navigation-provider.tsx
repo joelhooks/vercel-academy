@@ -22,7 +22,7 @@ export interface NavigationSection {
 
 export type NavigationResource = NavigationSection | NavigationLesson
 
-interface ModuleNavigation {
+export interface ModuleNavigation {
 	id: string
 	slug: string
 	title: string

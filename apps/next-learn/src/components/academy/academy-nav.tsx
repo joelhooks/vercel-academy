@@ -1,17 +1,12 @@
 'use client'
-
-import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
-
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import Link from 'next/link'
 import { MobileSidebar } from '../site/mobile-sidebar'
+import { AcademyNavLinks } from './academy-nav-links'
 
 export function AcademyNav() {
-	const pathname = usePathname()
-
 	return (
 		<header className="h-14 w-full border-b bg-background px-4 md:px-5">
 			<div className="mx-auto">
@@ -34,26 +29,7 @@ export function AcademyNav() {
 						</div>
 					</Link>
 
-					<nav className="mx-6 hidden items-center gap-5 md:flex">
-						<Link
-							href="/"
-							className={cn(
-								'text-sm font-normal text-muted-foreground hover:text-foreground',
-								pathname === '/' && 'text-foreground',
-							)}
-						>
-							All Courses
-						</Link>
-						<Link
-							href="/docs"
-							className={cn(
-								'text-sm font-normal text-muted-foreground hover:text-foreground',
-								pathname === '/docs' && 'text-foreground',
-							)}
-						>
-							Docs
-						</Link>
-					</nav>
+					<AcademyNavLinks />
 
 					<div className="ml-auto flex items-center gap-2">
 						<div className="relative hidden w-[250px] max-w-sm md:block">

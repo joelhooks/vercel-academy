@@ -1,10 +1,14 @@
 import { type ReactNode } from 'react'
 import { getContentResourceBySlug, getModuleNavigationData } from '@/server/content/resources'
-import { ModuleNavigationProvider } from '@/components/providers/module-navigation-provider'
+import {
+	ModuleNavigation,
+	ModuleNavigationProvider,
+} from '@/components/providers/module-navigation-provider'
 import { notFound } from 'next/navigation'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { getLocalizedContent } from '@/utils/localization'
 import { AcademyNav } from '@/components/academy/academy-nav'
+import { AcademySidebar } from '@/components/academy/sidebar/academy-sidebar'
 
 interface ModuleLayoutProps {
 	children: ReactNode
@@ -32,8 +36,7 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 	// Use the function to get complete navigation data
 	const navigationData = await getModuleNavigationData(moduleResource.id)
 
-	// Use the navigation data
-	const moduleNavigationLoader = Promise.resolve({
+	const moduleNavigation = {
 		id: moduleResource.id,
 		slug: moduleSlug,
 		title: getLocalizedContent({
@@ -58,16 +61,22 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 				defaultValue: '',
 			}),
 		},
-	})
+	} satisfies ModuleNavigation
+
+	// Use the navigation data
+	const moduleNavigationLoader = Promise.resolve(moduleNavigation)
 
 	return (
 		<main className="h-screen max-h-screen overflow-hidden">
+			<div className="w-full h-1 bg-red-500" />
 			<AcademyNav />
-			<SidebarProvider className="h-[calc(100vh-56px)]">
-				<ModuleNavigationProvider moduleNavDataLoader={moduleNavigationLoader}>
+
+			<ModuleNavigationProvider moduleNavDataLoader={moduleNavigationLoader}>
+				<SidebarProvider className="h-[calc(100vh-56px)]">
+					<AcademySidebar course={moduleResource} moduleNavigation={moduleNavigation} lang={lang} />
 					{children}
-				</ModuleNavigationProvider>
-			</SidebarProvider>
+				</SidebarProvider>
+			</ModuleNavigationProvider>
 		</main>
 	)
 }

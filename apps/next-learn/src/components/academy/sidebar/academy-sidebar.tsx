@@ -1,5 +1,3 @@
-'use client'
-
 import { Info } from 'lucide-react'
 
 import {
@@ -17,33 +15,34 @@ import {
 } from '@/components/ui/sidebar'
 import { ContentResource } from '@/schemas/content'
 import { CourseNavigation } from './course-navigation'
-import { NavUser } from './nav-user'
+import { NavUser, NavUserSkeleton } from './nav-user'
 import { NavLink } from './nav-link'
-import { useModuleNavigation } from '@/components/providers/module-navigation-provider'
-import { useSession } from 'next-auth/react'
+import { ModuleNavigation } from '@/components/providers/module-navigation-provider'
+import { Suspense } from 'react'
 
-export function AcademySidebar({ course, lang }: { course: ContentResource; lang?: string }) {
-	const navigation = useModuleNavigation()
-	const { data: session, status } = useSession()
-
-	const user = session?.user
-
-	if (!navigation || status === 'loading') {
-		return <AcademySidebarSkeleton course={course} />
-	}
-
+export function AcademySidebar({
+	course,
+	moduleNavigation,
+	lang,
+}: {
+	course: ContentResource
+	moduleNavigation: ModuleNavigation
+	lang?: string
+}) {
 	return (
 		<>
 			<Sidebar collapsible="icon" className="h-[calc(100vh-56px)] mt-14">
 				<SidebarHeader className="border-b bg-background/50 h-[65px] flex items-center justify-center group-has-[[data-collapsible=icon]]/sidebar-wrapper:hidden">
 					{/* <CourseSwitcher course={course} brand={brand} /> */}
-					<div className="flex text-left justify-start w-full px-3">{navigation.title}</div>
+					<div className="flex text-left justify-start w-full px-3">{moduleNavigation.title}</div>
 				</SidebarHeader>
 				<SidebarContent>
 					<CourseNavigation course={course} lang={lang} />
 				</SidebarContent>
 				<SidebarFooter className="border-t grid divide-y bg-background/50 group-has-[[data-collapsible=icon]]/sidebar-wrapper:divide-y-0">
-					<NavUser user={user} />
+					<Suspense fallback={<NavUserSkeleton />}>
+						<NavUser />
+					</Suspense>
 					<div className="flex items-center justify-between pt-2">
 						<div className="flex items-center group-has-[[data-collapsible=icon]]/sidebar-wrapper:mx-auto">
 							<SidebarTrigger />

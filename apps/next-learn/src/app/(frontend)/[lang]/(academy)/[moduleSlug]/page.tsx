@@ -61,9 +61,6 @@ export default async function ModulePage({ params }: ModulePageProps) {
 
 	return (
 		<>
-			<Suspense fallback={<AcademySidebarSkeleton course={moduleResource} />}>
-				<AcademySidebar course={moduleResource} lang={lang} />
-			</Suspense>
 			<SidebarInset id="module" className="relative overflow-y-auto pb-12">
 				<Section className="bg-accent/30 border-b relative !bg-grid">
 					<Container className="ds space-y-4 sm:space-y-6 items-center" isUniversity>

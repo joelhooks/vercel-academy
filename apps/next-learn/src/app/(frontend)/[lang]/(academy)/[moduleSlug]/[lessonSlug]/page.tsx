@@ -104,9 +104,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
 	return (
 		<>
-			<Suspense fallback={<AcademySidebarSkeleton course={moduleResource} />}>
-				<AcademySidebar course={moduleResource} lang={lang} />
-			</Suspense>
 			<SidebarInset id="lesson" className="relative overflow-y-auto pb-12">
 				<div className="container mx-auto py-8 px-4 max-w-4xl">
 					{/* Simple Breadcrumb */}

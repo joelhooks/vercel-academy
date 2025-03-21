@@ -18,8 +18,7 @@ interface LangLayoutProps {
 }
 
 export default async function LangLayout({ children, params }: LangLayoutProps) {
-	// Await params to resolve before destructuring
-	const resolvedParams = await Promise.resolve(params)
+	const resolvedParams = await params
 	const { lang } = resolvedParams
 
 	// Validate locale

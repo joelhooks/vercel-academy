@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { defaultLocale } from '@/config/locales'
 import { cn } from '@/lib/utils'
 import { useModuleProgress } from '@/components/providers/module-progress-provider'
-import { SignInButton } from '@/components/sign-in-button'
+import { SignInButton } from '@/components/auth/sign-in-button'
 
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'

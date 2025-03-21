@@ -9,11 +9,6 @@ import { SidebarInset } from '@/components/ui/sidebar'
 import { Section } from '@/components/layout'
 import { Container } from '@/components/layout'
 import { Badge } from '@/components/ui/badge'
-import {
-	AcademySidebar,
-	AcademySidebarSkeleton,
-} from '@/components/academy/sidebar/academy-sidebar'
-import { Suspense } from 'react'
 
 export async function generateStaticParams() {
 	return generateModuleParams()
@@ -63,7 +58,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
 		<>
 			<SidebarInset id="module" className="relative overflow-y-auto pb-12">
 				<Section className="bg-accent/30 border-b relative !bg-grid">
-					<Container className="ds space-y-4 sm:space-y-6 items-center" isUniversity>
+					<Container className="ds space-y-4 sm:space-y-6 items-center" isAcademy>
 						<h1>{title}</h1>
 						{description && (
 							<p className="text-muted-foreground leading-tight">

@@ -134,49 +134,51 @@ function ChapterList({ lang, navigation }: { lang?: string; navigation: ModuleNa
 					// Handle sections with nested lessons
 					return (
 						<SidebarMenuItem key={resource.id}>
-							<Collapsible defaultOpen={isCurrentSection} className="group/collapsible w-full">
-								<CollapsibleTrigger asChild>
-									<button className="flex w-full min-h-[32px] items-center justify-between gap-2 rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
-										<span className="text-left line-clamp-2 text-xs uppercase tracking-wide">
-											{resource.title}
-										</span>
-										<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-									</button>
-								</CollapsibleTrigger>
-								<CollapsibleContent>
-									<div className="pl-3 pb-1 pt-1">
-										<SidebarMenu>
-											{resource.lessons.map((lesson) => {
-												const currentIndex = ++lessonIndex
-												const isCurrentLesson = lesson.slug === currentLessonSlug
-												return (
-													<SidebarMenuItem key={lesson.id}>
-														<SidebarMenuButton asChild isActive={isCurrentLesson}>
-															<NavLink
-																href={`${langPrefix}/${navigation.slug}/${lesson.slug}`}
-																isActive={isCurrentLesson}
-															>
-																<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full">
-																	<span>{lesson.title}</span>
-																	<StatusIndicator isComplete={false} />
-																</div>
-																<div
-																	className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full"
-																	title={lesson.title}
+							<div className="w-full">
+								<Collapsible defaultOpen={isCurrentSection} className="group/collapsible">
+									<CollapsibleTrigger asChild>
+										<button className="flex w-full min-h-[32px] items-center justify-between gap-2 rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
+											<span className="text-left line-clamp-2 text-xs uppercase tracking-wide">
+												{resource.title}
+											</span>
+											<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+										</button>
+									</CollapsibleTrigger>
+									<CollapsibleContent>
+										<div className="pl-3 pb-1 pt-1">
+											<SidebarMenu>
+												{resource.lessons.map((lesson) => {
+													const currentIndex = ++lessonIndex
+													const isCurrentLesson = lesson.slug === currentLessonSlug
+													return (
+														<SidebarMenuItem key={lesson.id}>
+															<SidebarMenuButton asChild isActive={isCurrentLesson}>
+																<NavLink
+																	href={`${langPrefix}/${navigation.slug}/${lesson.slug}`}
+																	isActive={isCurrentLesson}
 																>
-																	<span className="text-xs text-muted-foreground">
-																		{currentIndex}
-																	</span>
-																</div>
-															</NavLink>
-														</SidebarMenuButton>
-													</SidebarMenuItem>
-												)
-											})}
-										</SidebarMenu>
-									</div>
-								</CollapsibleContent>
-							</Collapsible>
+																	<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full">
+																		<span>{lesson.title}</span>
+																		<StatusIndicator isComplete={false} />
+																	</div>
+																	<div
+																		className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full"
+																		title={lesson.title}
+																	>
+																		<span className="text-xs text-muted-foreground">
+																			{currentIndex}
+																		</span>
+																	</div>
+																</NavLink>
+															</SidebarMenuButton>
+														</SidebarMenuItem>
+													)
+												})}
+											</SidebarMenu>
+										</div>
+									</CollapsibleContent>
+								</Collapsible>
+							</div>
 						</SidebarMenuItem>
 					)
 				}

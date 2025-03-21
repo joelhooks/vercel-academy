@@ -2,7 +2,7 @@ import { getModules } from '@/server/content/resources'
 
 // Import shadcn UI components
 import { Container, Section } from '@/components/layout'
-import { SignInCta } from '@/components/sign-in-cta'
+import { SignInCta } from '@/components/auth/sign-in-cta'
 import { CourseCard } from '@/components/academy/courses/course-card'
 
 interface HomePageProps {

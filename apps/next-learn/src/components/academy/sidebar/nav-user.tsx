@@ -21,26 +21,11 @@ import {
 	useSidebar,
 } from '@/components/ui/sidebar'
 
-import { SignInButton } from '@/components/sign-in-button'
+import { SignInButton } from '@/components/auth/sign-in-button'
 import { User } from 'next-auth'
-import { useSession } from 'next-auth/react'
-interface NavUserProps {}
 
-export function NavUser({}: NavUserProps) {
+export function NavUser({ user }: { user?: User | null }) {
 	const { isMobile } = useSidebar()
-	const { data: session, status } = useSession()
-
-	const user = session?.user
-
-	if (status === 'loading') {
-		return (
-			<SidebarMenu>
-				<SidebarMenuItem>
-					<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
-				</SidebarMenuItem>
-			</SidebarMenu>
-		)
-	}
 
 	if (!user) {
 		return (
@@ -60,8 +45,15 @@ export function NavUser({}: NavUserProps) {
 						<SidebarMenuButton className="w-full justify-between px-3">
 							<span className="flex items-center gap-2">
 								<Avatar className="h-6 w-6">
-									<AvatarImage src={user.image ?? undefined} />
-									<AvatarFallback>{user.name?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+									{user.image ? (
+										<img
+											src={user.image}
+											alt={user.name ?? 'User avatar'}
+											className="h-full w-full rounded-full object-cover"
+										/>
+									) : (
+										<AvatarFallback>{user.name?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+									)}
 								</Avatar>
 								{!isMobile && (
 									<span className="line-clamp-1 flex-1 text-left">{user.name ?? user.email}</span>
@@ -92,12 +84,11 @@ export function NavUser({}: NavUserProps) {
 		</SidebarMenu>
 	)
 }
-
 export const NavUserSkeleton = () => {
 	return (
 		<SidebarMenu>
 			<SidebarMenuItem>
-				<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
+				<div className="h-9 w-full animate-pulse rounded-md bg-muted" />
 			</SidebarMenuItem>
 		</SidebarMenu>
 	)

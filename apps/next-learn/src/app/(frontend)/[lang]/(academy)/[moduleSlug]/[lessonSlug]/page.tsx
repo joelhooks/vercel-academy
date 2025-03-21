@@ -13,8 +13,6 @@ import '@/styles/hljs/github-dark.css'
 import components from '@/mdx/components/components'
 import mdxOptions from '@/mdx/mdx-options'
 import { SidebarInset } from '@/components/ui/sidebar'
-import { AcademySidebar } from '@/components/academy/sidebar/academy-sidebar'
-import { AcademySidebarSkeleton } from '@/components/academy/sidebar/academy-sidebar'
 import { ChapterCompletionSkeleton } from '@/components/academy/chapters/chapter-completion'
 import { ChapterProgress } from '@/components/academy/chapters/chapter-progress'
 

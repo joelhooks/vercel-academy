@@ -1,7 +1,6 @@
 import { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-	strictMode: true,
 	trailingSlash: true,
 	images: {
 		remotePatterns: [

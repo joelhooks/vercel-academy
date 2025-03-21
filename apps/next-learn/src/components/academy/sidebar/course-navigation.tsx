@@ -1,8 +1,9 @@
 'use client'
 
 import { defaultLocale } from '@/config/locales'
-
-import { Info, Trophy } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { ChevronRight, Info, Trophy } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 import {
 	SidebarMenuButton,
@@ -14,10 +15,8 @@ import {
 import { NavLink } from './nav-link'
 import { StatusIndicator } from './nav-status-indicator'
 import { ContentResource } from '@/schemas/content'
-import {
-	ModuleNavigation,
-	useModuleNavigation,
-} from '@/components/providers/module-navigation-provider'
+import { ModuleNavigation } from '@/components/providers/module-navigation-provider'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
 export function CourseNavigation({
 	moduleNavigation,
@@ -85,6 +84,8 @@ function IntroductionLink({ course, lang }: { course: ContentResource; lang?: st
 }
 
 function ChapterList({ lang, navigation }: { lang?: string; navigation: ModuleNavigation }) {
+	const params = useParams()
+	const currentLessonSlug = params.lessonSlug as string | undefined
 	const langPrefix = lang && lang !== defaultLocale ? `/${lang}` : ''
 
 	if (!navigation?.resources) {
@@ -99,10 +100,14 @@ function ChapterList({ lang, navigation }: { lang?: string; navigation: ModuleNa
 				if (resource.type === 'lesson') {
 					// Handle top-level lessons
 					const currentIndex = ++lessonIndex
+					const isCurrentLesson = resource.slug === currentLessonSlug
 					return (
 						<SidebarMenuItem key={resource.id}>
-							<SidebarMenuButton asChild>
-								<NavLink href={`${langPrefix}/${navigation.slug}/${resource.slug}`}>
+							<SidebarMenuButton asChild isActive={isCurrentLesson}>
+								<NavLink
+									href={`${langPrefix}/${navigation.slug}/${resource.slug}`}
+									isActive={isCurrentLesson}
+								>
 									<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full">
 										<span>{resource.title}</span>
 										<StatusIndicator isComplete={false} />
@@ -120,44 +125,60 @@ function ChapterList({ lang, navigation }: { lang?: string; navigation: ModuleNa
 				}
 
 				if (resource.type === 'section' && Array.isArray(resource.lessons)) {
+					// Check if any lesson in this section is currently active
+					const isCurrentSection = resource.lessons.some(
+						(lesson) => lesson.slug === currentLessonSlug,
+					)
+
 					// Handle sections with nested lessons
 					return (
-						<div key={resource.id} className="space-y-1">
+						<Collapsible
+							key={resource.id}
+							defaultOpen={isCurrentSection}
+							className="group/collapsible"
+						>
 							<SidebarMenuItem>
-								<div className="py-2">
-									<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full">
-										<h4 className="text-md font-medium text-muted-foreground">{resource.title}</h4>
+								<CollapsibleTrigger asChild>
+									<button className="flex w-full min-h-[32px] items-center justify-between gap-2 rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
+										<span className="text-left line-clamp-2 text-xs uppercase tracking-wide">
+											{resource.title}
+										</span>
+										<ChevronRight className="h-3.5 w-3.5 shrink-0 opacity-50 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+									</button>
+								</CollapsibleTrigger>
+								<CollapsibleContent>
+									<div className="pl-3 pb-1 pt-1">
+										{resource.lessons.map((lesson) => {
+											const currentIndex = ++lessonIndex
+											const isCurrentLesson = lesson.slug === currentLessonSlug
+											return (
+												<SidebarMenuItem key={lesson.id}>
+													<SidebarMenuButton asChild isActive={isCurrentLesson}>
+														<NavLink
+															href={`${langPrefix}/${navigation.slug}/${lesson.slug}`}
+															isActive={isCurrentLesson}
+														>
+															<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full">
+																<span>{lesson.title}</span>
+																<StatusIndicator isComplete={false} />
+															</div>
+															<div
+																className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full"
+																title={lesson.title}
+															>
+																<span className="text-xs text-muted-foreground">
+																	{currentIndex}
+																</span>
+															</div>
+														</NavLink>
+													</SidebarMenuButton>
+												</SidebarMenuItem>
+											)
+										})}
 									</div>
-									<div
-										className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full"
-										title={resource.title}
-									>
-										<div className="h-px w-4 bg-border" />
-									</div>
-								</div>
+								</CollapsibleContent>
 							</SidebarMenuItem>
-							{resource.lessons.map((lesson) => {
-								const currentIndex = ++lessonIndex
-								return (
-									<SidebarMenuItem key={lesson.id}>
-										<SidebarMenuButton asChild>
-											<NavLink href={`${langPrefix}/${navigation.slug}/${lesson.slug}`}>
-												<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full">
-													<span>{lesson.title}</span>
-													<StatusIndicator isComplete={false} />
-												</div>
-												<div
-													className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full"
-													title={lesson.title}
-												>
-													<span className="text-xs text-muted-foreground">{currentIndex}</span>
-												</div>
-											</NavLink>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
-								)
-							})}
-						</div>
+						</Collapsible>
 					)
 				}
 

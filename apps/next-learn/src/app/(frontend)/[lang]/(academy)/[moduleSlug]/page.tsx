@@ -84,20 +84,18 @@ export default async function ModulePage({ params }: ModulePageProps) {
 						</div>
 					</Container>
 				</Section>
-				<div className="container max-w-6xl mx-auto py-8 px-4">
-					<div className="mb-8">
-						{body && (
-							<div className="prose dark:prose-invert max-w-none mb-8">
-								<MDXRemote
-									source={body}
-									components={components}
-									options={{
-										mdxOptions,
-									}}
-								/>
-							</div>
-						)}
-					</div>
+				<div className="container mx-auto py-8 px-4 max-w-4xl">
+					{body && (
+						<div className="prose dark:prose-invert max-w-none mb-8">
+							<MDXRemote
+								source={body}
+								components={components}
+								options={{
+									mdxOptions,
+								}}
+							/>
+						</div>
+					)}
 				</div>
 			</SidebarInset>
 		</>

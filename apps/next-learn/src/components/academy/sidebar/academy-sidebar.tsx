@@ -17,8 +17,8 @@ import { ContentResource } from '@/schemas/content'
 import { CourseNavigation } from './course-navigation'
 import { NavUser, NavUserSkeleton } from './nav-user'
 import { NavLink } from './nav-link'
-import { ModuleNavigation } from '@/components/providers/module-navigation-provider'
 import { Suspense } from 'react'
+import { ModuleNavigation } from '@/schemas/module-navigation'
 
 export function AcademySidebar({
 	course,
@@ -83,24 +83,6 @@ export const AcademySidebarSkeleton = ({ course }: { course: ContentResource }) 
 								</NavLink>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
-						{/* {course?.chapters?.map((chapterRef, index) => {
-              const chapter = chapterRef.chapter as Chapter
-              return (
-                <SidebarMenuItem key={chapter.id}>
-                  <SidebarMenuButton asChild>
-                    <NavLink href={`/${course.fields?.slug}/${chapter.fields?.slug}`}>
-                      <div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full">
-                        <span>{chapter.title}</span>
-                        <StatusIndicator isComplete={false} />
-                      </div>
-                      <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full">
-                        <span className="text-xs text-muted-foreground">{index + 1}</span>
-                      </div>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })} */}
 					</SidebarMenu>
 				</SidebarGroup>
 			</SidebarContent>

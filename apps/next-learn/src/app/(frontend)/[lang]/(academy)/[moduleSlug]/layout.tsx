@@ -1,14 +1,12 @@
 import { type ReactNode } from 'react'
 import { getContentResourceBySlug, getModuleNavigationData } from '@/server/content/resources'
-import {
-	ModuleNavigation,
-	ModuleNavigationProvider,
-} from '@/components/providers/module-navigation-provider'
+
 import { notFound } from 'next/navigation'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { getLocalizedContent } from '@/utils/localization'
 import { AcademyNav } from '@/components/academy/academy-nav'
 import { AcademySidebar } from '@/components/academy/sidebar/academy-sidebar'
+import { moduleNavigationSchema } from '@/schemas/module-navigation'
 
 interface ModuleLayoutProps {
 	children: ReactNode
@@ -36,7 +34,7 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 	// Use the function to get complete navigation data
 	const navigationData = await getModuleNavigationData(moduleResource.id)
 
-	const moduleNavigation = {
+	const moduleNavigation = moduleNavigationSchema.parse({
 		id: moduleResource.id,
 		slug: moduleSlug,
 		title: getLocalizedContent({
@@ -61,10 +59,7 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 				defaultValue: '',
 			}),
 		},
-	} satisfies ModuleNavigation
-
-	// Use the navigation data
-	const moduleNavigationLoader = Promise.resolve(moduleNavigation)
+	})
 
 	return (
 		<SidebarProvider>
@@ -79,11 +74,7 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 						/>
 					</div>
 					<div className="flex flex-col flex-1 w-full">
-						<main className="flex-1 overflow-y-auto bg-background w-full">
-							<ModuleNavigationProvider moduleNavDataLoader={moduleNavigationLoader}>
-								{children}
-							</ModuleNavigationProvider>
-						</main>
+						<main className="flex-1 overflow-y-auto bg-background w-full">{children}</main>
 					</div>
 				</div>
 			</div>

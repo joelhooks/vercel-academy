@@ -64,11 +64,13 @@ export function CourseNavigation({
 
 function IntroductionLink({ course, lang }: { course: ContentResource; lang?: string }) {
 	const langPrefix = lang && lang !== defaultLocale ? `/${lang}` : ''
+	const params = useParams()
+	const isActive = !params.lessonSlug
 
 	return (
 		<SidebarMenuItem>
-			<SidebarMenuButton asChild>
-				<NavLink href={`${langPrefix}/${course.fields?.slug}`}>
+			<SidebarMenuButton asChild isActive={isActive}>
+				<NavLink href={`${langPrefix}/${course.fields?.slug}`} isActive={isActive}>
 					<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full">
 						<span>Introduction</span>
 						<Info size={12} className="text-muted-foreground" />

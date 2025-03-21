@@ -37,7 +37,7 @@ export function AcademySidebar({
 					<div className="flex text-left justify-start w-full px-3">{moduleNavigation.title}</div>
 				</SidebarHeader>
 				<SidebarContent>
-					<CourseNavigation course={course} lang={lang} />
+					<CourseNavigation course={course} moduleNavigation={moduleNavigation} lang={lang} />
 				</SidebarContent>
 				<SidebarFooter className="border-t grid divide-y bg-background/50 group-has-[[data-collapsible=icon]]/sidebar-wrapper:divide-y-0">
 					<Suspense fallback={<NavUserSkeleton />}>

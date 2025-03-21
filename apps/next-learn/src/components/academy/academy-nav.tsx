@@ -8,7 +8,7 @@ import { AcademyNavLinks } from './academy-nav-links'
 
 export function AcademyNav() {
 	return (
-		<header className="h-14 w-full border-b bg-background px-4 md:px-5">
+		<header className="sticky top-0 z-50 h-14 w-full border-b bg-background px-4 md:px-5">
 			<div className="mx-auto">
 				<div className="flex h-14 items-center">
 					<Link href="/" className="flex items-center gap-3 font-bold">

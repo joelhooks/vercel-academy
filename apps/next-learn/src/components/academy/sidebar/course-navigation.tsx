@@ -14,15 +14,24 @@ import {
 import { NavLink } from './nav-link'
 import { StatusIndicator } from './nav-status-indicator'
 import { ContentResource } from '@/schemas/content'
-import { useModuleNavigation } from '@/components/providers/module-navigation-provider'
+import {
+	ModuleNavigation,
+	useModuleNavigation,
+} from '@/components/providers/module-navigation-provider'
 
-export function CourseNavigation({ course, lang }: { course: ContentResource; lang?: string }) {
-	const navigation = useModuleNavigation()
-
+export function CourseNavigation({
+	moduleNavigation,
+	lang,
+	course,
+}: {
+	moduleNavigation: ModuleNavigation
+	lang?: string
+	course: ContentResource
+}) {
 	// const progress = await getProgressForCourse(course.id)
 
 	const totalChapters =
-		navigation?.resources?.reduce((total, resource) => {
+		moduleNavigation?.resources?.reduce((total, resource) => {
 			if (resource.type === 'lesson') {
 				return total + 1
 			}
@@ -48,7 +57,7 @@ export function CourseNavigation({ course, lang }: { course: ContentResource; la
 			<SidebarGroupLabel>Chapters</SidebarGroupLabel>
 			<SidebarMenu>
 				<IntroductionLink course={course} lang={lang} />
-				<ChapterList lang={lang} />
+				<ChapterList lang={lang} navigation={moduleNavigation} />
 				{isFullyCompleted && <CompletionLink course={course} lang={lang} />}
 			</SidebarMenu>
 		</SidebarGroup>
@@ -75,8 +84,7 @@ function IntroductionLink({ course, lang }: { course: ContentResource; lang?: st
 	)
 }
 
-function ChapterList({ lang }: { lang?: string }) {
-	const navigation = useModuleNavigation()
+function ChapterList({ lang, navigation }: { lang?: string; navigation: ModuleNavigation }) {
 	const langPrefix = lang && lang !== defaultLocale ? `/${lang}` : ''
 
 	if (!navigation?.resources) {

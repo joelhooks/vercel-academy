@@ -67,16 +67,30 @@ export default async function ModuleLayout({ children, params }: ModuleLayoutPro
 	const moduleNavigationLoader = Promise.resolve(moduleNavigation)
 
 	return (
-		<main className="h-screen max-h-screen overflow-hidden">
-			<div className="w-full h-1 bg-red-500" />
-			<AcademyNav />
+		<SidebarProvider>
+			<div className="flex min-h-screen flex-col w-full">
+				<AcademyNav />
+				<div className="flex flex-1 overflow-hidden w-full">
+					<div className="hidden md:block">
+						<AcademySidebar
+							course={moduleResource}
+							moduleNavigation={moduleNavigation}
+							lang={lang}
+						/>
+					</div>
+					<div className="flex flex-col flex-1 w-full">
+						<main className="flex-1 overflow-y-auto bg-background w-full">
+							<ModuleNavigationProvider moduleNavDataLoader={moduleNavigationLoader}>
+								{children}
+							</ModuleNavigationProvider>
+						</main>
+					</div>
+				</div>
+			</div>
 
-			<ModuleNavigationProvider moduleNavDataLoader={moduleNavigationLoader}>
-				<SidebarProvider className="h-[calc(100vh-56px)]">
-					<AcademySidebar course={moduleResource} moduleNavigation={moduleNavigation} lang={lang} />
-					{children}
-				</SidebarProvider>
-			</ModuleNavigationProvider>
-		</main>
+			<main className="h-screen max-h-screen overflow-hidden">
+				<div className="w-full h-1 bg-red-500" />
+			</main>
+		</SidebarProvider>
 	)
 }

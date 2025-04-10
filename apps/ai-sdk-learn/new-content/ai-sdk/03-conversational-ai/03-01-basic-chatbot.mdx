@@ -1,0 +1,267 @@
+---
+title: 'Basic Chatbot (useChat)'
+description: 'Use the Vercel AI SDK `useChat` hook to quickly build a streaming chatbot interface in Next.js. Handle user input, display messages, and manage loading states.'
+summary:
+  current: You can build a basic streaming chatbot UI.
+  next: Learn to customize AI personality with system prompts.
+---
+
+# Building a Basic Chatbot
+
+Invisible AI offers subtle enhancements, but now let's explore direct interaction. Let's build something users can actively engage with - a conversational chatbot with streaming responses and a responsive interface.
+
+<VideoPlaceholder
+	title="Basic Chat: `streamText` + `useChat` Explained"
+	recorder="AI SDK Core Team / DevRel"
+	brief={`
+    **Video Goal:** Briefly show API route (\`streamText\` + \`toDataStreamResponse\`) and frontend (\`useChat\` hook setup). Run app, send message, highlight the streaming response in UI. Explain the connection.
+    **Duration:** 3-5 minutes
+    **Style:** Screencast/Code Walkthrough
+    **Content Outline:**
+    1. Overview of the chatbot architecture (frontend/backend)
+    2. Examine the API route with streamText
+    3. Look at the frontend with useChat
+    4. Run the app and demonstrate a message exchange
+    5. Highlight the streaming response behavior
+    6. Explain how the pieces connect together
+  `}
+/>
+
+**Goal:** Create a chatbot with efficient code. Set up an API route with `streamText`. Implement the frontend with `useChat`. Develop a functional chat interface that streams responses in real-time.
+
+<Callout type="info" title="Project Context">
+	We're working in `app/(5-chatbot)/` directory. Same project setup as before, but now we're
+	building both server and client sides.
+</Callout>
+
+---
+
+### Chatbot Architecture Overview
+
+Every chatbot needs two parts:
+
+1. **Backend (API Route):** Receives messages, calls AI model, streams responses back
+2. **Frontend (React):** Manages UI state, sends messages, displays streaming responses
+
+<VisualPlaceholder description="Simple diagram: Box 'Browser (React + useChat)' sends arrow 'User Message + History' to Box 'Server (Next.js API Route + streamText)'. Server box sends arrow 'Streaming Response' back to Browser box." />
+
+---
+
+### Step 1: Create API Route Handler
+
+First, let's create the API endpoint that powers your chat:
+
+<Callout type="info" title="What are Next.js API Routes?">
+	API routes are serverless endpoints in your Next.js app. They live in `app/api/`. No separate
+	backend needed. They're well-suited for AI functionality.
+</Callout>
+
+1. **Create File:** `app/(5-chatbot)/api/chat/route.ts`
+2. **Add Code:** Here's what you need:
+
+```typescript
+// app/(5-chatbot)/api/chat/route.ts
+import { openai } from '@ai-sdk/openai'
+import { streamText, CoreMessage } from 'ai' // Import CoreMessage type
+
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30
+
+export async function POST(req: Request) {
+	try {
+		// Extract the `messages` array from the body of the request
+		const { messages }: { messages: CoreMessage[] } = await req.json()
+
+		// Call the language model
+		const result = await streamText({
+			model: openai('gpt-4o-mini'), // Use gpt-4o-mini for faster responses
+			messages,
+		})
+
+		// Respond with the stream
+		return result.toDataStreamResponse()
+	} catch (error) {
+		console.error('Chat API error:', error)
+		// Generic error response
+		return new Response(JSON.stringify({ error: 'Failed to generate chat response.' }), {
+			status: 500,
+			headers: { 'Content-Type': 'application/json' },
+		})
+	}
+}
+```
+
+The key components:
+
+- `streamText` - core AI SDK function that enables text streaming
+- `toDataStreamResponse()` - formats the stream for your frontend
+- `try...catch` - provides basic error handling for reliability
+- That's approximately 30 lines for a complete AI backend!
+
+---
+
+### Step 2: Implement Frontend with useChat
+
+Now let's add the UI using the powerful `useChat` hook:
+
+```tsx
+// app/(5-chatbot)/chat/page.tsx
+'use client'
+
+import { useChat, type Message } from 'ai/react' // Import Message type
+
+/*
+  Example message format managed by useChat:
+  const messages: Message[] = [
+    { id: '1', role: 'user', content: 'Hello there!' },
+    { id: '2', role: 'assistant', content: 'Hi! How can I help?' },
+    // ... more messages
+  ]
+*/
+
+export default function Chat() {
+	// useChat hook manages messages, input state, submission
+	const { messages, input, handleInputChange, handleSubmit } = useChat()
+
+	return (
+		<div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+			{/* Render messages */}
+			{messages.map(
+				(
+					m: Message, // Explicitly type 'm'
+				) => (
+					<div key={m.id} className="whitespace-pre-wrap">
+						{m.role === 'user' ? 'User: ' : 'AI: '}
+						{m.content}
+					</div>
+				),
+			)}
+
+			{/* Input form */}
+			<form onSubmit={handleSubmit}>
+				<input
+					className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
+					value={input}
+					placeholder="Say something..."
+					onChange={handleInputChange}
+				/>
+				{/* Submission triggers handleSubmit */}
+			</form>
+		</div>
+	)
+}
+```
+
+What's happening here:
+
+- The `useChat()` hook handles most of the complexity
+- It manages message history, input state, and API calls
+- You implement the messages display and input form
+- That's about 20 lines for a complete chat UI!
+
+### Step 3: Test Your Chatbot
+
+Run it:
+
+```bash
+pnpm run dev
+```
+
+Navigate to `http://localhost:3000/chat`
+
+Try it out - type a message and hit Enter. Watch the AI response appear in real time!
+
+<VisualPlaceholder description="GIF animation showing the simple chat UI. User types 'Hello!' and presses Enter. AI response 'Hello there! How can I help you today?' streams into the chat window." />
+
+<Callout type="warning" title="Performance Considerations">
+	Streaming responses create a responsive feel even when the AI is processing. For faster responses,
+	`gpt-4o-mini` offers lower latency than `gpt-4o` - ideal for chatbots where responsiveness
+	matters.
+</Callout>
+
+Developer Insight: The combination of `streamText` and `useChat` allows you to create a chatbot efficiently. The AI SDK handles the streaming complexity for you.
+
+### TL;DR
+
+- Two components: Backend (`streamText` API route) + Frontend (`useChat` component)
+- `streamText` manages server-side AI calls and streaming
+- `useChat` handles UI state, messages, and API calls
+- `toDataStreamResponse()` connects backend to frontend
+- Efficient code creates a fully functional streaming chat
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Knowledge Check</h3>
+	<div className="space-y-8">
+		<MultipleChoiceQuestion
+			question="Which AI SDK function is used in the API route handler to get a streaming text response from the language model?"
+			choices={[
+				{ id: 'genText', text: 'generateText' },
+				{ id: 'genObj', text: 'generateObject' },
+				{ id: 'streamText', text: 'streamText' },
+				{ id: 'streamObj', text: 'streamObject' },
+			]}
+			correctAnswerId="streamText"
+			feedback={{
+				correct:
+					'Correct! `streamText` is specifically designed for generating text and streaming it back chunk by chunk.',
+				incorrect:
+					'`generateText` waits for the full response. `streamText` is needed for the real-time streaming effect in chatbots.',
+			}}
+		/>
+		<MultipleChoiceQuestion
+			question="Which `@ai-sdk/react` hook manages the chat messages, input field state, and form submission logic on the frontend?"
+			choices={[
+				{ id: 'useState', text: 'useState' },
+				{ id: 'useEffect', text: 'useEffect' },
+				{ id: 'useChat', text: 'useChat' },
+				{ id: 'useSWR', text: 'useSWR' },
+			]}
+			correctAnswerId="useChat"
+			feedback={{
+				correct:
+					'Correct! The `useChat` hook abstracts away most of the complexity of building chat interfaces.',
+				incorrect:
+					'While `useState` and `useEffect` are fundamental React hooks, `useChat` specifically handles the state and interactions for a chat application built with the AI SDK.',
+			}}
+		/>
+		<MultipleChoiceQuestion
+			question="What is the purpose of `result.toDataStreamResponse()` in the API route handler?"
+			choices={[
+				{ id: 'parse', text: 'To parse the incoming request body.' },
+				{ id: 'validate', text: "To validate the AI model's output against a schema." },
+				{
+					id: 'connect',
+					text: "To convert the AI's streaming output into a format directly consumable by the `useChat` hook on the frontend.",
+				},
+				{ id: 'log', text: 'To log the entire conversation history to the console.' },
+			]}
+			correctAnswerId="connect"
+			feedback={{
+				correct:
+					'Exactly! This helper function bridges the backend stream from `streamText` to the frontend `useChat` hook, handling the necessary formatting.',
+				incorrect:
+					"This helper's main role is formatting the streaming response for seamless integration with the `useChat` hook, not parsing requests, validating schemas, or logging.",
+			}}
+		/>
+	</div>
+</div>
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Reflection: Basic Chatbot Foundation</h3>
+	<p className="text-lg mb-4">
+		How does this streamlined chatbot compare to building similar features without AI SDK? What
+		features would you add next to enhance this basic implementation?
+	</p>
+	<Textarea placeholder="Type your reflection here..." className="min-h-[150px] w-full" />
+	<Button className="mt-4">Save Reflection</Button>
+</div>
+
+---
+
+## Making Progress: Give Your Bot Some Personality
+
+You've got a working chatbot - well done! But it currently has a standard, default personality.
+
+In the next lesson, we're adding character with system prompts. Want your bot to be a pirate? A chef? A witty comedian? It's just a few lines of code away.
+
+Let's make your chatbot distinctive with custom personalities that create memorable user experiences.

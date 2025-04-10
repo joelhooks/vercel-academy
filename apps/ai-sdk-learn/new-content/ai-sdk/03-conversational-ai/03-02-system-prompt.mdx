@@ -1,0 +1,217 @@
+---
+title: 'Chatbot Personality (Prompts)'
+description: "Customize your AI chatbot's behavior and personality using system prompts. Pass system instructions via the `useChat` hook's API route configuration."
+summary:
+  current: 'You can now define AI personalities using system prompts.'
+  next: 'Learn how to connect your chatbot to external tools and APIs.'
+---
+
+# System Prompts - Shaping AI Personality
+
+Basic chatbot you built in Lesson 3.1 responds generically. System Prompts define AI's consistent character, tone, and behavioral rules across conversations.
+
+<VideoPlaceholder
+	title="Shaping Responses: The Power of System Prompts"
+	recorder="DevRel / AI SDK Core Team"
+	brief={`
+    **Video Goal:** Show API route code. Change \`system\` prompt (e.g., helpful -> riddle -> simple persona). Run app after each change, ask same question, show different outputs.
+    **Duration:** 3-5 minutes
+    **Style:** Screencast/Demo
+    **Content Outline:**
+    1. View the API route code with a basic system prompt
+    2. Run the app with a standard helpful prompt
+    3. Change to a riddle-based system prompt
+    4. Run again and observe the different response style
+    5. Change to a persona-based system prompt
+    6. Run again to demonstrate personality changes
+    7. Explain the impact on user experience
+  `}
+/>
+
+**Goal:** Understand System Prompts. Implement `system` property in `streamText` call to customize chatbot's personality and response style.
+
+<Callout type="info" title="Project Context">
+	Continue editing API route handler `app/(5-chatbot)/api/chat/route.ts`. Frontend remains unchanged
+	from Lesson 3.1.
+</Callout>
+
+---
+
+### What are System Prompts?
+
+System Prompts act like persistent instructions or "character notes" for AI model. Unlike user prompts (which change each turn), system prompt guides overall behavior.
+
+- **Defines Persona:** Sets tone (e.g., formal, casual, witty, brand voice).
+- **Sets Constraints:** Instructs AI on boundaries (e.g., "Do not offer financial advice", "Only discuss product features").
+- **Provides Context:** Gives background relevant to all interactions (e.g., "You are a helpful assistant for Vercel products").
+
+<VisualPlaceholder description="Diagram: Box 'System Prompt (Personality/Rules)' feeds into larger Box 'AI Model'. Box 'User Prompt (Current Question)' also feeds into 'AI Model'. 'AI Model' outputs arrow 'AI Response (Influenced by Both Prompts)'." />
+
+**Builder Takeaway:** System Prompts control _how_ AI responds, separate from _what_ user asks. Essential for branding, safety, and consistent bot behavior.
+
+---
+
+### Implementation: The `system` Property
+
+Add `system` property to `streamText` call in API route handler (`app/(5-chatbot)/api/chat/route.ts`). Value is string containing instructions.
+
+```typescript
+// app/(5-chatbot)/api/chat/route.ts
+import { openai } from '@ai-sdk/openai'
+import { streamText, CoreMessage } from 'ai'
+
+export const maxDuration = 30
+
+export async function POST(req: Request) {
+	try {
+		const { messages }: { messages: CoreMessage[] } = await req.json()
+
+		const result = await streamText({
+			model: openai('gpt-4o-mini'),
+			// Add system prompt here
+			system: 'You are a helpful assistant.', // Initial basic prompt
+			messages,
+		})
+
+		return result.toDataStreamResponse()
+	} catch (error) {
+		console.error('Chat API error:', error)
+		return new Response(JSON.stringify({ error: 'Failed to generate chat response.' }), {
+			status: 500,
+			headers: { 'Content-Type': 'application/json' },
+		})
+	}
+}
+```
+
+### Example 1: The Unhelpful Riddle Bot
+
+Modify system property to drastically change behavior.
+
+Update route.ts: Change system string.
+
+```typescript
+// Inside streamText call in app/(5-chatbot)/api/chat/route.ts
+  system: 'You are an unhelpful assistant that only responds to users with confusing riddles.',
+```
+
+Save & Test: Run dev server (pnpm run dev). Go to http://localhost:3000/chat. Ask simple question (e.g., "What is Next.js?"). Observe riddle response.
+
+<VisualPlaceholder description="Screenshot of chat UI. User asks 'What is Next.js?'. AI responds with a confusing riddle instead of a direct answer." />
+
+### Example 2: The 1984 Steve Jobs Bot
+
+Models can adopt personas. Detail improves adherence.
+
+Update `route.ts`: Change system string to detailed persona.
+
+```typescript
+// Inside streamText call in app/(5-chatbot)/api/chat/route.ts
+  system: `You are Steve Jobs. Assume his character, both strengths and flaws.
+  Respond exactly how he would, in exactly his tone.
+  It is 1984 you have just created the Macintosh.`,
+  // Consider using gpt-4o for better persona adoption if mini struggles
+  // model: openai('gpt-4o'),
+```
+
+Save & Test: Refresh chat page. Ask relevant question (e.g., "What do you think of Bill Gates?"). Observe persona reflected in response.
+
+<VisualPlaceholder description="Screenshot of chat UI. User asks 'What do you think of Bill Gates?'. AI responds in a tone mimicking Steve Jobs in 1984." />
+
+<Callout type="info" title="Model Selection & System Prompts">
+	More capable models (like `gpt-4o` vs `gpt-4o-mini`) generally follow System Prompts more
+	precisely and maintain character consistency. For production chatbots where persona is critical,
+	test models to balance performance and cost.
+</Callout>
+
+### Example 3: Practical Support Assistant
+
+Define persona and constraints for realistic application.
+
+Update `route.ts`: Change system string to business context.
+
+```typescript
+// Inside streamText call in app/(5-chatbot)/api/chat/route.ts
+  system: `You are a support assistant for TechCorp's cloud platform.
+  Focus on helping users troubleshoot deployment issues, API usage, and account settings.
+  Be concise but thorough. Link to documentation at docs.techcorp.com when relevant.
+  If a question is outside your knowledge area, politely redirect to contact@techcorp.com.`,
+```
+
+Save & Test: Refresh chat page. Ask support-related questions (e.g., "How do I reset my password?", "Tell me about pricing"). Observe constrained, helpful responses.
+
+<Callout type="warning" title="System Prompt Length">
+	While detailed System Prompts improve behavior, very long prompts consume context window space,
+	potentially affecting performance or cost. Keep prompts concise yet clear for production.
+</Callout>
+
+Builder Takeaway: Experiment with different system prompts. Test various models. Specificity and detail in system prompt improve persona adherence and constraint following.
+
+### Key Takeaways
+
+- **System Prompts:** Define AI's consistent personality, tone, rules via system property (streamText, generateText).
+- **Behavior Control:** Shape how AI responds, independent of user's current question.
+- **Branding/Persona:** Align chatbot with brand voice or character. Essential for consistent user experience.
+- **Constraints:** Set boundaries (e.g., topics, response style, actions to avoid).
+
+Iteration: Test different prompts and models. Refine based on observed behavior.
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Knowledge Check</h3>
+	<div className="space-y-8">
+		<MultipleChoiceQuestion
+			question="What is the primary purpose of a System Prompt in the AI SDK?"
+			choices={[
+				{ id: 'question', text: "To provide the user's current question to the AI." },
+				{ id: 'history', text: 'To store the entire conversation history.' },
+				{
+					id: 'persona',
+					text: "To define the AI's consistent personality, tone, and behavioral rules across interactions.",
+				},
+				{ id: 'output', text: 'To specify the desired output format (e.g., JSON, plain text).' },
+			]}
+			correctAnswerId="persona"
+			feedback={{
+				correct:
+					'Correct! The System Prompt sets the background context and rules for how the AI should generally behave or respond.',
+				incorrect:
+					'User questions are part of the `messages` array. System Prompt provides overarching guidance on personality and behavior.',
+			}}
+		/>
+		<MultipleChoiceQuestion
+			question="In which AI SDK function call property do you typically place the system prompt string?"
+			choices={[
+				{ id: 'prompt', text: '`prompt`' },
+				{ id: 'messages', text: '`messages`' },
+				{ id: 'system', text: '`system`' },
+				{ id: 'schema', text: '`schema`' },
+			]}
+			correctAnswerId="system"
+			feedback={{
+				correct:
+					'Correct! The `system` property is used within functions like `streamText` or `generateText` to provide the system-level instructions.',
+				incorrect:
+					'The `prompt` is typically used for the immediate user instruction, while `messages` holds history. `system` is for the overarching AI persona/rules.',
+			}}
+		/>
+	</div>
+</div>
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Reflection: Defining Your Bot's Persona</h3>
+	<p className="text-lg mb-4">
+		Imagine building chatbot for specific purpose (e.g., company support, technical documentation
+		assistant, personal project). What system prompt would define its core personality, tone, and
+		key constraints? Draft 2-3 sentences for system prompt.
+	</p>
+	<Textarea placeholder="Draft your system prompt here..." className="min-h-[150px] w-full" />
+	<Button className="mt-4">Save Reflection</Button>
+</div>
+
+---
+
+## Next Step: Connecting Your Chatbot with Tools
+
+Your chatbot has personality, but its knowledge is limited. Now, let's give it capabilities to interact with the outside world.
+
+This lesson introduces Tools, enabling your chatbot to call external functions or APIs (like fetching live weather data). This makes your chatbot genuinely useful and dynamic.

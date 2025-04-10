@@ -1,0 +1,215 @@
+---
+title: 'Course Complete & Next Steps'
+description: "You've completed the Vercel AI SDK course! Review key learnings (LLMs, prompting, SDK features) and find resources for continued exploration in AI engineering."
+summary:
+  current: 'You have completed the AI SDK course!'
+  next: 'Go build amazing things!'
+---
+
+# Next Steps & Resources
+
+Congratulations on completing the course! You've developed a strong foundation in AI development. Now you can apply these skills to create innovative applications.
+
+<VideoPlaceholder
+	title="Your AI Journey with Vercel"
+	recorder="Instructor / Vercel Lead"
+	brief={`
+    **Video Goal:** Congratulate learners. Briefly recap platform benefits (SDK, Next.js, v0, Deployment). Encourage using resources (Docs, Playground, Templates, Community) and continued building.
+    **Duration:** 3-5 minutes
+    **Style:** Webcam Talk
+    **Content Outline:**
+    1. Congratulate learners on completing the course
+    2. Recap the journey from fundamentals to tools to UI
+    3. Highlight the key benefits of the Vercel platform
+    4. Point to important resources (docs, playground, templates)
+    5. Encourage community participation and project sharing
+    6. Motivate continued building and experimentation
+  `}
+/>
+
+**Goal:** Access the tools and resources you need to develop effective AI features.
+
+---
+
+### Skills You've Developed
+
+You've gained proficiency with:
+
+- **AI SDK Fundamentals:** `generateText` + `generateObject` + effective prompts
+- **Invisible AI:** Classification, summarization, extraction + v0 UI
+- **Chatbot Capabilities:** `streamText` + `useChat` + Tools + Generative UI
+
+<VisualPlaceholder description="Infographic showing the complete learning journey from fundamentals to chatbot implementation" />
+
+---
+
+### Mental Models for Development
+
+- **LLMs as APIs:** Inputs → LLM → Outputs. Straightforward.
+- **Prompt Engineering:** Clear instructions + examples = significantly better results
+- **Schema-Driven:** Zod schemas = structured data with type safety
+- **Streaming:** Real-time responses = improved user experience
+- **Tools:** APIs + LLMs = enhanced chatbot capabilities
+- **Generative UI:** Dynamic components = adaptive interfaces
+- **v0:** Create UI without complex CSS challenges
+
+---
+
+### Deploy Your Projects
+
+Get your work into production:
+
+- **Deploy Guide:** [Vercel Deployment Docs](https://vercel.com/docs/deployments/overview) <ExternalLink className="inline-block ml-1 h-4 w-4" />
+- **Share Your Bot:** Generate public URLs to showcase your work
+
+---
+
+### Continue Learning
+
+Bookmark these essential resources:
+
+- **SDK Docs:** [sdk.vercel.ai/docs](https://sdk.vercel.ai/docs) <ExternalLink className="inline-block ml-1 h-4 w-4" />
+- **GitHub Repo:** [github.com/vercel/ai](https://github.com/vercel/ai) <ExternalLink className="inline-block ml-1 h-4 w-4" />
+- **Playground:** [sdk.vercel.ai/playground](https://sdk.vercel.ai/playground) <ExternalLink className="inline-block ml-1 h-4 w-4" />
+- **Templates:** [vercel.com/templates/ai](https://vercel.com/templates/ai) <ExternalLink className="inline-block ml-1 h-4 w-4" />
+- **Chatbot Starter:** [github.com/vercel/ai-chatbot](https://github.com/vercel/ai-chatbot) <ExternalLink className="inline-block ml-1 h-4 w-4" />
+- **v0 UI:** [v0.dev](https://v0.dev) <ExternalLink className="inline-block ml-1 h-4 w-4" />
+- **Community:** Vercel Discord + [GitHub Show & Tell](https://github.com/vercel/ai/discussions/categories/show-and-tell) <ExternalLink className="inline-block ml-1 h-4 w-4" />
+
+<Callout type="info" title="Development Pathway">
+	1. **Master:** Explore all AI SDK examples 2. **Expand:** Build a RAG system (integrating your
+	data with AI) 3. **Integrate:** Add authentication + database for users 4. **Scale:** Implement
+	rate limits + caching
+</Callout>
+
+---
+
+### Community Showcase
+
+<ProjectShowcase
+	title="AI SDK Community Showcase"
+	description="See what others are building with the Vercel AI SDK."
+	projects={[
+		{
+			title: 'Featured Projects',
+			url: 'https://vercel.com/ai',
+			description: 'Highlighted applications from the Vercel ecosystem',
+		},
+		{
+			title: 'Community Builds',
+			url: 'https://github.com/vercel/ai/discussions/categories/show-and-tell',
+			description: 'Latest projects shared by developers',
+		},
+	]}
+/>
+
+---
+
+### Troubleshooting Guide
+
+Avoid common challenges:
+
+<Callout type="warning" title="Debugging Cheatsheet">
+	* **Rate Limits:** Check [OpenAI limits](https://platform.openai.com/docs/guides/rate-limits).
+	Implement retries. * **Context Windows:** Long chats = token overflow. Consider truncating
+	history. * **Tool Errors:** Add `console.log` in `execute()`. Verify parameters on the server. *
+	**Schema Errors:** For improved outputs, refine `.describe()` or use more capable models.
+</Callout>
+
+---
+
+### What's Next?
+
+AI technology evolves rapidly. Continue learning and building with new models and approaches.
+
+<Callout type="idea" title="Quick Project Ideas">
+	* **Beginner:** Add auto-tagging to feedback forms * **Intermediate:** Add TL;DR to long articles
+	* **Advanced:** Build research bot with web search + PDF parsing
+</Callout>
+
+<FurtherReading
+	title="Building RAG Applications"
+	description="Retrieval Augmented Generation (RAG) is one of the most powerful patterns for building AI applications with your own data."
+	links={[
+		{
+			title: 'Vercel RAG Template',
+			url: 'https://github.com/vercel/ai/tree/main/templates/next-langchain',
+			description: 'Ready-to-use starter template for building RAG apps',
+		},
+		{
+			title: 'AI SDK RAG Documentation',
+			url: 'https://sdk.vercel.ai/docs/guides/langchain-retrieval',
+			description: 'Integrating LangChain, vector databases, and the AI SDK',
+		},
+		{
+			title: 'Practical RAG Tutorial',
+			url: 'https://vercel.com/blog/build-a-rag-chatbot-with-ai-sdk-and-langchain',
+			description: 'Step-by-step guide to implementing a RAG system',
+		},
+		{
+			title: 'Vector Database Options',
+			url: 'https://js.langchain.com/docs/integrations/vectorstores/',
+			description: 'Compare different vector storage solutions for your RAG app',
+		},
+	]}
+/>
+
+<Exploration
+	title="Exploring Different Model Providers"
+	description="The AI SDK makes it easy to switch between different LLM providers."
+	prompt="Try replacing OpenAI with another provider in one of the lessons. What changes are needed? How do the outputs differ?"
+	steps={[
+		"Install additional provider packages with `pnpm add @ai-sdk/anthropic` or `pnpm add @ai-sdk/google`",
+		"Update imports: `import { anthropic } from '@ai-sdk/anthropic'` or `import { google } from '@ai-sdk/google'`",
+		"Replace model specification: `model: anthropic('claude-3-opus-20240229')` or `model: google('gemini-1.5-pro')`",
+		"Adjust any provider-specific parameters in your prompts",
+		"Compare performance, output quality, and token usage across providers"
+	]}
+	code={`
+// OpenAI
+import { openai } from '@ai-sdk/openai';
+const { text } = await generateText({
+	model: openai('gpt-4o'),
+	prompt: "Explain quantum computing in simple terms"
+});
+
+// Anthropic
+import { anthropic } from '@ai-sdk/anthropic';
+const { text } = await generateText({
+model: anthropic('claude-3-opus-20240229'),
+prompt: "Explain quantum computing in simple terms"
+});
+
+// Google
+import { google } from '@ai-sdk/google';
+const { text } = await generateText({
+model: google('gemini-1.5-pro'),
+prompt: "Explain quantum computing in simple terms"
+});
+`}
+/>
+
+<Callout type="challenge" title="Your Next AI Feature">
+	Consider developing a small AI feature. Plan it out and implement it when you're ready.
+</Callout>
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Final Reflection</h3>
+	<p className="text-lg mb-4">
+		What did you find most interesting in this course? Which feature are you most excited to build?
+		What AI project are you considering for your next development?
+	</p>
+	<Textarea
+		placeholder="Type your final thoughts and next steps here..."
+		className="min-h-[150px] w-full"
+	/>
+	<Button className="mt-4">Save Reflection</Button>
+</div>
+
+<CongratsVideo
+	title="Congratulations on Completing the Course!"
+	description="A special message from our CEO on your achievement and next steps"
+	videoUrl="/videos/ceo-congrats.mp4"
+/>
+
+You've completed the course! Now you can create innovative AI features!

@@ -1,0 +1,188 @@
+---
+title: 'Invisible AI Features'
+description: 'Section Intro: Explore "Invisible AI" - features like summarization & classification that improve UX without being the main focus. Prep for building them.'
+summary:
+  current: You're ready to explore Invisible AI.
+  next: Learn to classify text automatically using the AI SDK.
+---
+
+# What is Invisible AI?
+
+Great job with the fundamentals! You've learned how LLMs work as APIs and how to extract data with prompts. Now let's move from basic scripts to features that create genuine value for users.
+
+<VideoPlaceholder
+	title="Why Invisible AI Matters for Product Experience"
+	recorder="Product Manager / UX Lead"
+	brief={`
+    **Video Goal:** Explain the concept using "activation energy". Discuss how subtle AI enhances UX, potentially citing *types* of features used at Vercel (without revealing proprietary details) or well-known industry examples.
+    **Duration:** 3-5 minutes
+    **Style:** Webcam Talk
+    **Content Outline:**
+    1. Introduction to the concept of "activation energy" in product experiences
+    2. How subtle AI features can reduce user friction
+    3. Examples of invisible AI in popular products
+    4. The impact on user retention and satisfaction
+    5. Why this matters for builders
+  `}
+/>
+
+Let's set aside chatbots for a moment. Some of the most impactful AI happens when users don't even realize it's there. Smart categorization. Instant summaries. Forms with intelligent assistance. These are the features we're building next.
+
+That's **Invisible AI** - thoughtful enhancements that make your app feel intuitive and responsive.
+
+**Goal:** Understand Invisible AI techniques - what they are, why users appreciate them, and how to build them with AI SDK + v0.
+
+### Beyond Chatbots: Subtle Superpowers
+
+Chatbots get much of the attention (we'll build one later), but AI's real impact often comes from features users don't explicitly notice.
+
+**Invisible AI** integrates helpful assistance throughout your app.
+
+No flashy AI badges. Just smooth, fast, intuitive experiences. Users won't think "AI did this." They'll think "Wow, this app gets me."
+
+<VisualPlaceholder description="Subtle sparkles or background glow effect appearing behind a generic modern web app UI, hinting at 'magic' without being overt AI imagery." />
+
+<FurtherReading
+	title="Ethics of Subtle AI"
+	description="When AI is invisible, it raises important ethical considerations about transparency and user agency."
+	links={[
+		{
+			title: 'The Ethics of Invisible AI',
+			url: 'https://uxdesign.cc/the-ethics-of-invisible-ai-470732142ee5',
+			description: 'Exploring transparency concerns when AI operates behind the scenes',
+		},
+		{
+			title: 'Transparent AI and User Trust',
+			url: 'https://www.research.ibm.com/blog/ai-transparency-trust',
+			description: 'Research on balancing seamless UX with appropriate transparency',
+		},
+		{
+			title: 'Designing Ethical AI Experiences',
+			url: 'https://pair.withgoogle.com/guidebook/patterns',
+			description: "Google's People + AI Research guidebook on ethical AI design patterns",
+		},
+	]}
+/>
+
+### Activation Energy: The Science Behind Great UX
+
+Think about UX as activation energy. Every form field, every click, every search = friction.
+
+Invisible AI reduces that friction. It automates repetitive tasks and makes complex flows feel intuitive.
+
+For developers, this approach offers several benefits:
+
+- **More Conversions:** Less friction = more sign-ups
+- **Better Retention:** Responsive apps keep users engaged
+- **Fewer Support Tickets:** Intuitive UX means fewer confused users
+- **User Time Savings:** Automating tedious tasks = happier users
+- **Delightful Moments:** When your app feels remarkably intuitive
+
+**Builder Takeaway:** Use AI for practical enhancements. Solve real UX problems. Make core features shine.
+
+### Advancing: From Text to Structure
+
+You used `generateText` for basic text output. Now we're using `generateObject` to get structured JSON instead. This approach offers significant advantages.
+
+Compare the difference:
+
+```typescript
+// Standard approach: Just text
+const { text } = await generateText({
+	model: openai('gpt-4o-mini'),
+	prompt: `Extract names from: ${longText}`,
+})
+console.log(text)
+// "Brian Chesky, Ron Conway, Steve Jobs"
+
+// Advanced approach: Structured data
+const { object } = await generateObject({
+	model: openai('gpt-4o-mini'),
+	prompt: `Parse appointment from: ${appointmentText}`,
+	schema: z.object({
+		title: z.string(),
+		date: z.string(),
+		time: z.string().nullable(),
+		location: z.string().nullable(),
+		attendees: z.array(z.string()).nullable(),
+	}),
+})
+console.log(object)
+// { title: "Meeting", date: "Tomorrow", time: "2pm", location: "Vercel HQ", attendees: ["Guillermo"] }
+```
+
+See the improvement? You get clean, typed JSON that maps perfectly to your app's data structure. No more string parsing complexity.
+
+Try it:
+
+<InlinePromptUI
+	id="text-vs-structure-1"
+	title="Try Text Output"
+	task="Extract names from this text using generateText"
+	initialPrompt="Extract all names from this text: 'In the meeting, Guillermo and Lee discussed the new Vercel AI SDK with Sarah from marketing.'"
+/>
+
+<InlinePromptUI
+	id="text-vs-structure-2"
+	title="Try Structured Output"
+	task="See how generateObject returns structured data"
+	initialPrompt={`Extract appointment details from: 'Team meeting tomorrow 3pm in the conference room with Guillermo and Sarah'`}
+	allowMultiline={true}
+	structuredOutput={true}
+	schema={`z.object({
+    title: z.string(),
+    date: z.string(),
+    time: z.string().nullable(),
+    location: z.string().nullable(),
+    attendees: z.array(z.string()).nullable(),
+  })`}
+/>
+
+### You Already Use This Stuff
+
+Invisible AI is everywhere:
+
+- Linear suggesting issue titles? AI.
+- Figma search understanding "blue button"? AI.
+- Gmail smart replies? AI.
+- GitHub Copilot? AI.
+- Analytics showing anomalies? AI.
+
+<VisualPlaceholder description="A 'before/after' GIF: Left side shows raw text like 'Meeting w/ Sarah tomorrow 10am coffee shop'. Right side shows a structured calendar event UI populated with Title: Meeting, Attendee: Sarah, Date: Tomorrow, Time: 10am, Location: Coffee Shop." />
+
+These features don't scream "AI" - they just feel like good UX.
+
+### UI Enhancement with v0
+
+Building UI for AI features can be challenging. Enter Vercel v0.
+
+Throughout Section 2, we'll use v0 to efficiently build polished UI components for our AI features.
+
+<VisualPlaceholder description="Split screen: Left side shows a simple text prompt in the v0 interface like 'Create a card to display an event summary with title, date, time, location, and attendees'. Right side shows the generated React/Tailwind code and a preview of the polished UI card." />
+
+Skip the CSS headaches. Just tell v0 what you want in plain English. Create beautiful AI features more efficiently.
+
+### TL;DR
+
+- **Invisible AI** = subtle features that make your app feel intuitive
+- Reduces UX friction (activation energy) and delights users
+- Powered by `generateObject` + Zod schemas for structured data
+- Enhance your UI with v0
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Reflection: Spotting Invisible AI</h3>
+	<p className="text-lg mb-4">
+		What apps do you use with hidden AI features? Identify 1-2 examples. How do they improve UX? How
+		could you build something similar with the AI SDK?
+	</p>
+	<Textarea placeholder="Type your reflection here..." className="min-h-[150px] w-full" />
+	<Button className="mt-4">Save Reflection</Button>
+</div>
+
+---
+
+## Advancing To: Building a Classification Engine
+
+Ready to build something practical with Invisible AI? Let's start with auto-classification - a powerful feature that categorizes support tickets, content, or user messages automatically.
+
+In the next lesson, you'll build a system that takes unstructured user text, organizes it into clear categories using Zod schemas for type safety, and significantly improves support workflow efficiency. Let's put `generateObject` to work!

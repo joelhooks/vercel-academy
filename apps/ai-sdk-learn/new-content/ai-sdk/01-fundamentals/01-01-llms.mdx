@@ -1,0 +1,109 @@
+---
+title: 'LLMs as APIs'
+description: 'Learn why treating LLMs like familiar web APIs (input/output, state) accelerates development and how the Vercel AI SDK simplifies this builder mindset.'
+summary:
+  current: Now that you understand LLMs as APIs.
+  next: Learn powerful prompting techniques to instruct LLMs effectively.
+---
+
+# Large Language Models: Your Builder's API
+
+<VideoPlaceholder
+	title="LLMs as APIs: The Builder Mindset"
+	recorder="AI SDK Core Team / DevRel"
+	brief={`
+    **Video Goal:** Explain *why* treating LLMs like familiar web APIs (input/output, state management) accelerates development. Compare to using a Stripe or Twilio API. Reinforces a core mental model.
+    **Duration:** Short Talk
+    **Style:** Webcam Talk
+    **Content Outline:**
+    1. Introduction to the concept of LLMs as APIs
+    2. Comparison with familiar web APIs like Stripe or Twilio
+    3. How this mental model accelerates development
+    4. Practical examples of how this approach simplifies integration
+  `}
+/>
+
+Enough talk, more code. Check this out:
+
+```javascript
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import 'dotenv/config'
+
+async function main() {
+	const { text } = await generateText({
+		model: openai('gpt-4o-mini'), // Choose your model
+		prompt: 'Tell me a short, funny joke about web developers.', // Give it instructions
+	})
+
+	console.log(text) // Get the result!
+}
+
+main().catch(console.error)
+```
+
+Dead simple, right? Pick a model, give instructions, get text back. That's the LLM-as-API approach. No PhD required.
+
+### TL;DR: LLMs are APIs
+
+- LLMs predict what comes next
+- They learn from massive data dumps
+- They follow instructions like an API
+- That's your mental model. Done.
+
+That's what you need to understand to get started shipping code. Let's dive into some details about what "LLMs are APIs" means in practice.
+
+### Core Function of an LLM: Predicting the Next "Token"
+
+LLMs are "just" fancy autocomplete. They predict what comes next based on patterns they've seen.
+
+They break text into "tokens" (words or chunks) and pick the most likely next token.
+
+Rinse, repeat. That's it.
+
+<TokenPredictionDiagram />
+
+When you call `generateText()` or `streamText()` with the AI SDK to get a response from an LLM, you're tapping this prediction engine.
+
+Key differences of programming against an LLM vs normal code:
+
+- Outputs vary slightly (it's probabilistic)
+- Context limits exist (token windows)
+- You need guard rails for critical paths
+
+<FurtherReading
+	title="Tokenization: The Building Blocks of LLMs"
+	description="Understanding tokens is crucial for working with LLMs - they impact costs, context windows, and performance."
+	links={[
+		{
+			title: 'OpenAI Tokenizer Tool',
+			url: 'https://platform.openai.com/tokenizer',
+			description: 'See how your text gets split into tokens',
+		},
+		{
+			title: 'Tokens and Context Windows Explained',
+			url: 'https://platform.openai.com/docs/guides/text-generation/managing-tokens',
+			description: 'Learn how to work with token limits',
+		},
+	]}
+/>
+
+### Learning from Data: The Power of Patterns and Scope of the Entire Known Internet
+
+LLMs train on massive text dumps (the whole internet + GitHub).
+
+Think pattern recognition at a massive scale.
+
+The model parameter you use (`openai('gpt-4o-mini')`) is choosing which pre-trained brain to rent. Bigger models = smarter but slower/pricier.
+
+Not all models are created equal.
+
+Garbage in = garbage out. For both models and the context of your prompts to the model. The model inherits the internet's biases, so your prompts need to be tight and keep that top of mind.
+
+### Beyond Prediction: Following Instructions
+
+LLMs aren't just parrots. They follow orders. Your prompt is an extremely important API parameter telling the model what to do.
+
+As you'll see soon, the AI SDK greatly simplifies the messy parts of interacting with an LLM.
+
+Want more control? `generateObject()`

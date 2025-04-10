@@ -1,0 +1,310 @@
+---
+title: 'Data Extraction'
+---
+
+# Extraction - Your First AI Script
+
+Done with the theory and setup? Now it's time to actually ship some code. Let's build your first AI feature using everything you've learned so far.
+
+<VideoPlaceholder
+	title="Your First AI Script: The Iteration Loop"
+	recorder="DevRel / AI SDK Core Team"
+	brief={`
+    **Video Goal:** Show the \`extraction.ts\` code, run \`pnpm extraction\`, quickly change the *prompt* in the code, re-run, change the *model*, re-run. Emphasizes the core dev loop of prompt/model iteration.
+    **Duration:** 3-5 minutes
+    **Style:** Screencast/Demo
+    **Content Outline:**
+    1. View the extraction.ts file structure
+    2. Run initial script with pnpm extraction
+    3. Modify the prompt to extract a different type of information
+    4. Run again and observe the changes
+    5. Switch to a different model
+    6. Run again and compare results
+    7. Highlight the importance of this iteration cycle
+  `}
+/>
+
+**Goal:** Build and run a script that extracts info from text. See firsthand how tweaking your prompt or swapping models instantly changes your results. This is where the rubber meets the road.
+
+---
+
+### Analyzing the Starter Script
+
+Open your project code. Look for `app/(1-extraction)/extraction.ts` and `essay.txt`.
+
+Here's the code that extracts names from the essay:
+
+```typescript
+import 'dotenv/config';
+import fs from 'fs';
+import { generateText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+
+// Import the essay text
+const essay = fs.readFileSync('app/(1-extraction)/essay.txt', 'utf-8');
+
+async function main() {
+console.log('Asking AI to extract names...');
+
+// Call the AI SDK's generateText function
+const result = await generateText({
+// Specify the model to use (a smaller, faster OpenAI model)
+model: openai('gpt-4o-mini'),
+// Provide the instructions (prompt) and the data (essay)
+prompt: \`Extract all the names mentioned in this essay. List them separated by commas.
+
+---
+
+Essay:
+\${essay}\`,
+});
+
+// Access the AI's generated text response
+console.log('\\n--- AI Response ---');
+console.log(result.text);
+console.log('-------------------');
+}
+
+main().catch(console.error);
+```
+
+**Quick Breakdown:**
+
+1. **Imports:** Standard stuff - file system, AI SDK, and OpenAI adapter
+2. **Load Data:** Grab that essay text from the file
+3. **Main Function:** Set up the AI call
+4. **generateText:** The core SDK function with:
+   - `model`: Which AI brain to use
+   - `prompt`: What to ask + the essay content
+5. **Result Handling:** Log the AI's response
+
+### Run Your First AI Script!
+
+From your terminal, run:
+
+```bash
+pnpm extraction
+```
+
+You'll see the AI extracting names from the essay. Boom - your first AI feature is live!
+
+<VisualPlaceholder description="Terminal showing successful 'pnpm extraction' output with names." />
+
+<Callout title="Verification Task">
+	Check `app/(1-extraction)/essay.txt` and use search (Cmd+F/Ctrl+F) to verify the names. Did the AI
+	nail it or miss some?
+</Callout>
+
+<Callout title="Token Awareness" type="info">
+  LLMs process text as "tokens" (~4 chars each). This affects speed and cost.
+
+**Quick Hack:** Add this to your script to see token usage:
+
+```typescript
+import { encoding_for_model } from 'tiktoken'
+
+// Add this function somewhere in your script
+function countTokens(text: string, model: string = 'gpt-4o-mini') {
+try {
+// Note: Specify the model used in generateText for accuracy
+const enc = encoding_for_model(model as any); // Use 'as any' for broader model compatibility if needed
+const tokens = enc.encode(text);
+enc.free(); // Free up memory
+return tokens.length;
+} catch (e) {
+console.warn("Tiktoken error, using approximation:", e);
+return Math.ceil(text.length / 4); // Fallback approximation
+}
+}
+
+// In main(), after getting the result:
+const promptForTokenCount = \`Extract all the names mentioned in this essay. List them separated by commas.
+
+---
+
+Essay:
+\${essay}\`;
+console.log(\`\\n--- Token Usage (Approx.) ---\`);
+console.log(\`Prompt tokens: \${countTokens(promptForTokenCount, 'gpt-4o-mini')}\`);
+console.log(\`Response tokens: \${countTokens(result.text, 'gpt-4o-mini')}\`);
+console.log('---------------------------');
+```
+
+(Install with `pnpm add tiktoken` first)
+
+</Callout>
+
+---
+
+### Guided Experimentation: The Core of AI Development
+
+Running once is just the start. Real AI work is all about iteration. Let's play:
+
+**Challenge 1: Prompt Engineering – Change the Task**
+
+- **Task:** Swap the prompt to:
+
+  ```typescript
+  // Inside the prompt backticks:
+  What is the key takeaway of this piece in 50 words?
+
+  ---
+  Essay:
+  ${essay}
+  ```
+
+- **Action:** Save and run `pnpm extraction`
+- **Observe:** See how one prompt change completely transforms what your app does
+
+**Challenge 2: Model Swapping – Upgrade the Brain**
+
+- **Task:** Keep the summary prompt but change the model:
+  ```typescript
+  // Change this line:
+  model: openai('gpt-4o'),
+  ```
+- **Action:** Save and run again
+- **Observe:** Compare results. Better quality? Worth the extra cost/time?
+
+---
+
+<Callout title="Side Quest: Extraction Expert" type="challenge">
+	**Challenge:** Extract different data by changing prompts: * Get all company names * Identify main
+	concepts/terms * Pull out quotes (text in quotation marks)
+</Callout>
+
+<Callout title="Side Quest: Prompt Optimization" type="challenge">
+	**Challenge:** Level up name extraction: * Add examples (few-shot style) * Request names with
+	roles/titles * Ask for numbered list format
+</Callout>
+
+---
+
+### Real-World Applications
+
+This simple extraction pattern powers serious production features:
+
+- **Content Moderation:** Finding problematic content
+- **Research Tools:** Pulling key data from papers
+- **Data Pipelines:** Converting messy text to clean data
+- **Compliance Systems:** Identifying PII/sensitive info
+
+Same pattern everywhere: send content + instructions, process the response.
+
+### Builder Takeaways
+
+- `generateText` = your basic AI workhorse
+- The `prompt` = what guides the AI
+- The `model` = power/speed/cost tradeoff
+- **Iteration** = the key to success
+
+<Details summary="Troubleshooting Guide">
+	<ul className="list-disc space-y-2 pl-5 mt-2 text-sm">
+		<li>
+			<strong>API Key Errors (401):</strong> Check your `.env` file. Key spelled right? Pasted
+			fully? Account has credits?
+		</li>
+		<li>
+			<strong>Rate Limiting (429):</strong> Hit usage limits. Wait a bit or upgrade your plan.
+		</li>
+		<li>
+			<strong>Module Errors:</strong> Run `pnpm install` again. Maybe clear `node_modules` first.
+		</li>
+		<li>
+			<strong>Timeouts:</strong> Larger models are slower. Normal. Check internet if consistent
+			fails.
+		</li>
+		<li>
+			<strong>Command not found:</strong> Make sure `pnpm` is installed globally and run `pnpm
+			install` in project root.
+		</li>
+	</ul>
+</Details>
+
+<div className="my-12">
+	<h3 className="text-2xl font-semibold mb-4 border-b pb-2">Further Reading (Optional)</h3>
+	<div className="space-y-4">
+		<div className="p-4 border rounded-lg bg-card">
+			<h4 className="font-medium mb-1">
+				<a
+					href="https://sdk.vercel.ai/docs/reference/ai-sdk-core/generate-text"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-blue-600 hover:underline"
+				>
+					AI SDK Documentation: `generateText`
+				</a>
+			</h4>
+			<p className="text-sm text-muted-foreground">
+				Official documentation for the core function we used in this lesson. Explore all parameters
+				and options available.
+			</p>
+		</div>
+		<div className="p-4 border rounded-lg bg-card">
+			<h4 className="font-medium mb-1">
+				<a
+					href="https://platform.openai.com/tokenizer"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-blue-600 hover:underline"
+				>
+					OpenAI Tokenizer Tool
+				</a>
+			</h4>
+			<p className="text-sm text-muted-foreground">
+				Visualize how text becomes tokens. Understanding tokenization helps optimize your prompts
+				for both cost and effectiveness.
+			</p>
+		</div>
+		<div className="p-4 border rounded-lg bg-card">
+			<h4 className="font-medium mb-1">
+				<a
+					href="https://www.promptingguide.ai/"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-blue-600 hover:underline"
+				>
+					Prompt Engineering Guide
+				</a>
+			</h4>
+			<p className="text-sm text-muted-foreground">
+				Explore advanced prompting techniques to further improve your AI interactions beyond the
+				basics covered in this lesson.
+			</p>
+		</div>
+		<div className="p-4 border rounded-lg bg-card">
+			<h4 className="font-medium mb-1">
+				<a
+					href="https://platform.openai.com/docs/models/overview"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-blue-600 hover:underline"
+				>
+					OpenAI Model Overview
+				</a>
+			</h4>
+			<p className="text-sm text-muted-foreground">
+				Understand the capabilities, strengths, and trade-offs of different models to make informed
+				choices for your applications.
+			</p>
+		</div>
+	</div>
+</div>
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Reflection: Your First AI Script</h3>
+	<p className="text-lg mb-4">
+		What surprised you most when changing prompts vs models? How does this hands-on experience
+		change how you think about working with AI?
+	</p>
+	<Textarea placeholder="Type your reflection here..." className="min-h-[150px] w-full" />
+	<Button className="mt-4">Save Reflection</Button>
+</div>
+
+---
+
+## What's Next? Invisible AI
+
+You've mastered the fundamentals - now it's time to apply them to build subtle, powerful features. In this section, we dive into "Invisible AI" - the art of enhancing user experiences seamlessly.
+
+You'll learn to automatically classify content, generate concise summaries, and extract structured data, all integrated smoothly into application workflows. Let's move beyond basic scripts to build features users will love.

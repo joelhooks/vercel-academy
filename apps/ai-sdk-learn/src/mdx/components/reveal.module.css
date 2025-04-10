@@ -1,0 +1,15 @@
+.content {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.content > :last-child {
+	margin-bottom: 0;
+}
+
+/* Reset margins on direct children to use gap instead */
+.content > * {
+	margin-top: 0;
+	margin-bottom: 0;
+}

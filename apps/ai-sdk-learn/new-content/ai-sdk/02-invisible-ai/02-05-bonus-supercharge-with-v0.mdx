@@ -1,0 +1,235 @@
+---
+title: 'Bonus: UI with Vercel v0'
+description: 'Learn how Vercel v0 accelerates UI development for AI features. Generate React components (using Shadcn UI & Tailwind) directly from text prompts.'
+summary:
+  current: You know how v0 can speed up UI development.
+  next: Start building a full-featured AI chatbot.
+---
+
+# [Bonus] Supercharge UI with Vercel v0
+
+You've mastered AI logic with the SDK. That's great, but your features need killer UI. Enter v0 - your UI copilot that turns text prompts into gorgeous components in seconds.
+
+<VideoPlaceholder
+	title="v0 Quickstart: Prompt to Component"
+	recorder="v0 Core Team / DevRel"
+	brief={`
+    **Video Goal:** Show v0.dev interface. Enter prompt for simple card. Briefly iterate (e.g., "make background dark blue"). Copy generated code. Show *where* it would go in \`components/\` directory in Next.js project (no need for full app integration).
+    **Duration:** 3-5 minutes
+    **Style:** Screencast/Demo
+    **Content Outline:**
+    1. Open v0.dev interface
+    2. Enter a prompt for a simple card component
+    3. Show the generated code and preview
+    4. Iterate on the prompt to refine the design
+    5. Copy the final code
+    6. Show where it would go in a Next.js project structure
+  `}
+/>
+
+**Goal:** Go from text prompt to polished UI components without CSS hell. Get slick interfaces for your AI features without design skills.
+
+<Callout type="info" title="Project Context">
+	This uses v0.dev as an external tool. The same project setup from earlier applies when integrating
+	your fancy new components.
+</Callout>
+
+---
+
+### What is Vercel v0?
+
+Think of v0 as UI-GPT. Feed it a prompt, get back production-ready React code. It's trained on best practices for React, Tailwind and shadcn/ui. No more pixel-pushing or CSS debugging.
+
+**Builder Benefit:** Ship UI 10x faster. Spend your brain cycles on AI features, not border-radius values.
+
+---
+
+### Hands-On: Generate Component with v0
+
+Let's build a card component to show that structured appointment data from the last lesson:
+
+**v0 Prompt Example:**
+
+<V0PromptLink
+	prompt="Create a React card component using Tailwind CSS and shadcn/ui Card components. It should accept props: title (string), date (string), time (string, nullable), location (string, nullable). Display title prominently. Show date/time and location below, each with a simple icon (calendar, clock, map pin). Handle null values gracefully with placeholder text like 'Not specified'."
+	buttonText="Try this prompt in v0"
+/>
+
+<VisualPlaceholder description="Screenshot of v0.dev interface. Shows text prompt input area on left, generated React/Tailwind code in center, and visual preview of generated card component on right." />
+
+### Iterating on Prompts
+
+Small tweaks in prompts = big UI changes:
+
+**Weak Prompt:** `Create a simple button.`
+**Strong Prompt:** `Create a primary action button using shadcn/ui Button component, with a blue background, white text, rounded corners, and slight hover effect.`
+
+**Give it a shot:**
+
+<V0PromptLink
+	prompt="Create a React card component using Tailwind CSS and shadcn/ui Card components. Props: title, date, time, location. Show title and details with icons."
+	buttonText="Try this iteration prompt in v0"
+/>
+
+---
+
+### Integrating v0 Code
+
+The code v0 spits out is ready to ship. Here's how to use it:
+
+1. **Copy Code:** Grab everything including imports
+2. **Install Dependencies:** Usually means shadcn components
+   ```bash
+   # Example if Card component is used
+   pnpm dlx shadcn-ui@latest add card
+   ```
+3. **Create Component File:** Drop it in `components/GeneratedCard.tsx`
+4. **Import & Use:** Pass your data to the new component
+
+<Callout type="warning" title="Common Gotchas">
+	* **Missing Components:** Run shadcn CLI for any components in imports * **Style Conflicts:**
+	Global CSS might break things * **Type Mismatches:** Tweak the props interface if needed
+</Callout>
+
+**Example Generated Code (Simplified):**
+
+```tsx
+// components/GeneratedCard.tsx
+import { CalendarIcon, ClockIcon, MapPinIcon } from 'lucide-react' // Ensure lucide-react is installed
+
+interface GeneratedCardProps {
+	title: string
+	date: string
+	time?: string | null
+	location?: string | null
+}
+
+export function GeneratedCard({ title, date, time, location }: GeneratedCardProps) {
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle>{title}</CardTitle>
+			</CardHeader>
+			<CardContent className="space-y-2 text-sm">
+				<div className="flex items-center gap-2">
+					<CalendarIcon className="size-4 text-muted-foreground" />
+					<span>{date}</span>
+					{time && (
+						<>
+							<ClockIcon className="size-4 text-muted-foreground ml-2" />
+							<span>{time}</span>
+						</>
+					)}
+					{!time && <span className="text-muted-foreground">(Time not specified)</span>}
+				</div>
+				<div className="flex items-center gap-2">
+					<MapPinIcon className="size-4 text-muted-foreground" />
+					<span>
+						{location || <span className="text-muted-foreground">Location not specified</span>}
+					</span>
+				</div>
+			</CardContent>
+		</Card>
+	)
+}
+```
+
+Using it:
+
+```tsx
+// Example usage in a page component
+
+export default function MyPage() {
+	const appointmentData = {
+		// Example data
+		title: 'AI Sync Meeting',
+		date: '2024-11-15',
+		time: '14:00',
+		location: 'Virtual',
+	}
+
+	return (
+		<div>
+			<h1>Upcoming Appointment</h1>
+			<GeneratedCard {...appointmentData} />
+		</div>
+	)
+}
+```
+
+With v0, you can:
+
+- Create beautiful UIs for your AI outputs
+- Iterate on design through text instead of CSS
+- Focus on the AI part, not the pretty part
+
+### TL;DR
+
+- **UI-as-Prompts:** Tell v0 what you want, get polished React components
+- **Ship Faster:** Cut UI dev time by 80%+, focus on AI SDK magic
+- **Dead Simple:** Copy, paste, add dependencies, import, done
+- **Perfect for AI Results:** Quickly create cards/displays for your AI data
+
+It's the speed combo: AI SDK handles the brains, v0 handles the looks. Build in hours what used to take days.
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Knowledge Check</h3>
+	<div class="space-y-8">
+		<MultipleChoiceQuestion
+			question="What is the primary input method for generating UI with Vercel v0?"
+			choices={[
+				{ id: 'code', text: 'Writing React code directly.' },
+				{ id: 'dragdrop', text: 'Using a drag-and-drop interface builder.' },
+				{ id: 'prompt', text: 'Writing natural language text prompts.' },
+				{ id: 'config', text: 'Configuring JSON files.' },
+			]}
+			correctAnswerId="prompt"
+			feedback={{
+				correct:
+					'Correct! v0 uses text prompts describing the desired UI to generate component code.',
+				incorrect:
+					'While v0 produces code, the primary way to interact with it and generate UI is through text prompts.',
+			}}
+		/>
+		<MultipleChoiceQuestion
+			question="After generating a component with v0, what is a common next step before using it in your Next.js project?"
+			choices={[
+				{ id: 'deploy', text: 'Deploying the component directly from v0.' },
+				{ id: 'test', text: 'Writing extensive unit tests for the generated code.' },
+				{
+					id: 'install',
+					text: "Checking the generated code's imports and installing any missing shadcn/ui dependencies using the CLI (`pnpm dlx shadcn-ui@latest add ...`).",
+				},
+				{ id: 'rewrite', text: 'Rewriting the generated code completely.' },
+			]}
+			correctAnswerId="install"
+			feedback={{
+				correct:
+					'Correct! v0 often uses shadcn/ui components. You need to ensure these components are installed in your project before the generated code will work.',
+				incorrect:
+					'While testing is good practice, the immediate step after copying code is often ensuring dependencies like shadcn/ui components are installed in your project.',
+			}}
+		/>
+	</div>
+</div>
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Reflection: v0 for Your Ideas</h3>
+	<p className="text-lg mb-4">
+		What AI features could you enhance with v0-generated UI? Write a prompt for a component that
+		would display data from one of your Invisible AI features.
+	</p>
+	<Textarea
+		placeholder="Type your v0 prompt or reflection here..."
+		className="min-h-[150px] w-full"
+	/>
+	<Button className="mt-4">Save Reflection</Button>
+</div>
+
+---
+
+## Now You Can Build a Chatbot
+
+You've mastered Invisible AI techniques. Now it's time for more direct human-AI interaction.
+
+This section guides you through building a full-featured chat interface using the `useChat` hook, complete with streaming responses, AI personalities, external tool connections, and dynamic UI components. Ready to build something conversational?

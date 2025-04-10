@@ -1,0 +1,220 @@
+/*!
+  Theme: GitHub Dark
+  Description: Dark theme as seen on github.com
+  Author: github.com
+  Maintainer: @Hirse
+  Updated: 2021-05-15
+
+  Outdated base version: https://github.com/primer/github-syntax-dark
+  Current colors taken from GitHub's CSS
+*/
+
+:root {
+	--color-code-background: hsl(0, 0%, 10%);
+	--color-text-weak: #8b949e;
+	--color-inserted-line: rgba(126, 231, 135, 0.15);
+	--color-deleted-line: rgba(255, 123, 114, 0.15);
+	--color-highlighted-line: rgba(126, 231, 135, 0.1);
+	--color-highlighted-line-indicator: #7ee787;
+
+	/* Design system alignments */
+	--ds-background-100: hsl(0, 0%, 6%);
+	--ds-background-200: #161b22;
+	--ds-gray-200: rgba(139, 148, 158, 0.1);
+	--ds-gray-300: #30363d;
+	--ds-gray-400: #30363d;
+	--ds-gray-600: #8b949e;
+	--ds-gray-900: #8b949e;
+	--ds-gray-1000: #c9d1d9;
+
+	/* Syntax highlighting colors */
+	--ds-pink-900: #ff7b72; /* keywords */
+	--ds-blue-900: #79c0ff; /* constants, numbers */
+	--ds-green-900: #7ee787; /* strings, tags */
+	--ds-purple-900: #d2a8ff; /* functions */
+	--ds-amber-900: #ffa657; /* parameters, built-ins */
+	--ds-red-900: #ff7b72; /* deleted, properties */
+
+	/* Focus and interaction */
+	--ds-blue-300: rgba(56, 139, 253, 0.1);
+	--ds-focus-ring: 0 0 0 2px #1f6feb;
+}
+
+.hljs {
+	color: var(--ds-gray-1000);
+	background: var(--ds-background-100);
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-meta .hljs-keyword,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-variable.language_ {
+	/* prettylights-syntax-keyword */
+	color: var(--ds-pink-900);
+}
+
+.hljs-attr,
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.class_.inherited__,
+.hljs-title.function_ {
+	/* prettylights-syntax-entity */
+	color: var(--ds-purple-900);
+}
+
+.hljs-attribute,
+.hljs-literal,
+.hljs-meta,
+.hljs-number,
+.hljs-operator,
+.hljs-variable,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id {
+	/* prettylights-syntax-constant */
+	color: var(--ds-blue-900);
+}
+
+.hljs-regexp,
+.hljs-string,
+.hljs-meta .hljs-string {
+	/* prettylights-syntax-string */
+	color: var(--ds-green-900);
+}
+
+.hljs-built_in,
+.hljs-symbol {
+	/* prettylights-syntax-variable */
+	color: var(--ds-amber-900);
+}
+
+.hljs-comment,
+.hljs-code,
+.hljs-formula {
+	/* prettylights-syntax-comment */
+	color: var(--ds-gray-900);
+}
+
+.hljs-name,
+.hljs-quote,
+.hljs-selector-tag,
+.hljs-selector-pseudo {
+	/* prettylights-syntax-entity-tag */
+	color: var(--ds-green-900);
+}
+
+.hljs-subst {
+	/* prettylights-syntax-storage-modifier-import */
+	color: var(--ds-gray-1000);
+}
+
+.hljs-section {
+	/* prettylights-syntax-markup-heading */
+	color: #1f6feb;
+	font-weight: bold;
+}
+
+.hljs-bullet {
+	/* prettylights-syntax-markup-list */
+	color: #f2cc60;
+}
+
+.hljs-emphasis {
+	/* prettylights-syntax-markup-italic */
+	color: var(--ds-gray-1000);
+	font-style: italic;
+}
+
+.hljs-strong {
+	/* prettylights-syntax-markup-bold */
+	color: var(--ds-gray-1000);
+	font-weight: bold;
+}
+
+.hljs-addition {
+	/* prettylights-syntax-markup-inserted */
+	color: #aff5b4;
+	background-color: #033a16;
+}
+
+.hljs-deletion {
+	/* prettylights-syntax-markup-deleted */
+	color: #ffdcd7;
+	background-color: #67060c;
+}
+
+.hljs-char.escape_,
+.hljs-link,
+.hljs-params,
+.hljs-property,
+.hljs-punctuation,
+.hljs-tag {
+	/* purposely ignored */
+}
+
+.parent-container-of-pre {
+	display: grid; /* in order { overflow-x: auto; } works in child <pre> */
+}
+
+pre,
+pre code {
+	background-color: var(--ds-background-100);
+
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	line-height: 1.2;
+	tab-size: 2;
+	hyphens: none;
+}
+
+pre {
+	padding: 0;
+	overflow-x: auto;
+	position: relative;
+}
+
+pre > code {
+	float: left;
+	min-width: 100%;
+	font-size: 12px;
+	padding: 0 0px 0.1rem 0;
+}
+
+.code-line {
+	width: 100%;
+	padding-left: 24px;
+	border-left: 2px solid transparent; /* prepare for highlighted code-lines */
+	display: inline-block;
+	vertical-align: top;
+}
+
+.code-line.inserted {
+	background-color: var(--color-inserted-line); /* inserted code-line (+) */
+}
+
+.code-line.deleted {
+	background-color: var(--color-deleted-line); /* deleted code-line (-) */
+}
+
+.highlighted-code-line {
+	background-color: var(--ds-blue-400);
+	border-left: 2px solid var(--ds-blue-900);
+}
+
+.numbered-code-line::before {
+	content: attr(data-line-number);
+
+	margin-left: -8px;
+	margin-right: 16px;
+	width: 1rem;
+	color: var(--color-text-weak);
+	text-align: right;
+
+	display: inline-block;
+}

@@ -1,0 +1,512 @@
+---
+title: 'Automatic Summarization'
+description: 'Implement one-click summarization using Vercel AI SDK `streamText`. Handle streaming responses for a better UX and create concise summaries on demand.'
+summary:
+  current: You can now automatically summarize content.
+  next: Learn to extract structured data from text.
+---
+
+# Summarization - Condensing Information Overload
+
+You've structured data with classification. Now tackle information overload. Long threads, dense articles, and feedback need summarization - a "TL;DR" feature.
+
+<VideoPlaceholder
+	title="Refining Summaries with Zod `.describe()`"
+	recorder="AI SDK Core Team / DevRel"
+	brief={`
+    **Video Goal:** Show \`summarization/actions.ts\`. Run the app to show initial, less structured summary. Add specific \`.describe()\` constraints (length, "include names"). Re-run app to show improved, structured output in \`SummaryCard\`.
+    **Duration:** 3-5 minutes
+    **Style:** Screencast/Demo
+    **Content Outline:**
+    1. Examine the summarization/actions.ts file
+    2. Run the app to show initial summary output
+    3. Add .describe() constraints to the schema fields
+    4. Explain the importance of specific instructions
+    5. Re-run the app to demonstrate the improved results
+    6. Show how the SummaryCard displays the structured data
+  `}
+/>
+
+**Goal:** Build a summarization feature with `generateObject` to condense comments. Use Zod schema descriptions and integrate UI components with Vercel v0.
+
+---
+
+#### The Problem: Too Much Text, Too Little Time
+
+We've all been there. You come back to a Slack channel or email thread with dozens of messages. Reading everything takes time you don't have, but you need the gist. Manual summarization is slow and prone to missing key details.
+
+This is a perfect job for AI! We can feed the entire conversation to an LLM and ask it to pull out the essential information.
+
+<InlinePromptUI
+  id="basic-summarization"
+  title="Try Basic Summarization"
+  task="Summarize this conversation thread"
+  initialPrompt={`Summarize this conversation thread into key points:
+
+Alice: Hey team, I think we should redesign the homepage to highlight our new features.
+Bob: I agree, but we need to make sure it works on mobile devices too.
+Charlie: The redesign will take about 2 weeks. Can marketing wait that long?
+Alice: Yes, they said end of month is fine. Let's also add analytics tracking.
+Bob: Good call. I'll set up the tracking events today.
+Charlie: I'll create the design mockups by Friday for review.`}
+  structuredOutput={true}
+  schema={`z.object({
+headline: z.string().describe('The main topic or title of the summary. Max 5 words.'),
+context: z.string().describe('Briefly explain what this conversation is about. Max 2 sentences.'),
+keyPoints: z.string().describe('Bullet points of the main discussion topics.'),
+nextSteps: z.string().describe('Action items with names of who is responsible.')
+})`}
+/>
+
+#### Setup: The Comment Thread App
+
+<Callout type="info" title="Project Setup">
+	Continuing with the same codebase from{' '}
+	<a href="../01-fundamentals/01-04-ai-sdk-setup">Lesson 1.4</a>. For this section, you'll find the
+	summarization example files in the `app/(3-summarization)/` directory.
+</Callout>
+
+Navigate to the `app/(3-summarization)/summarization/` directory in your project.
+
+1.  **Run the Dev Server:** If it's not already running, start it:
+    ```bash
+    pnpm run dev
+    ```
+2.  **Open the Page:** Navigate to `http://localhost:3000/summarization` in your browser.
+
+You'll see a simple page displaying a list of comments (loaded from `messages.json`). Our task is to make the "Summarize" button functional.
+
+<VisualPlaceholder description="Screenshot of the '/summarization' page showing the list of comments and the 'Summarize' button." />
+
+---
+
+#### Step 1: Building the Summarization Action
+
+We'll use a Next.js Server Action to handle the AI call.
+
+<Callout type="info" title="What are Server Actions?">
+	Next.js Server Actions let you run secure server-side code directly from your React components
+	without manually creating API routes. They're perfect for AI features because they keep your API
+	keys and sensitive logic on the server while providing a seamless developer experience for calling
+	backend functions from the frontend.
+</Callout>
+
+1.  **Create `actions.ts`:** Inside the `app/(3-summarization)/summarization/` directory, create a new file named `actions.ts`.
+2.  **Basic Action Setup:** Add the `use server` directive and define an async function `generateSummary`.
+
+    ```typescript
+    // app/(3-summarization)/summarization/actions.ts
+    'use server'
+
+    import { generateObject } from 'ai'
+    import { openai } from '@ai-sdk/openai'
+    import { z } from 'zod'
+
+    // Define the structure we want for our summary
+    const summarySchema = z.object({
+    	headline: z.string(),
+    	context: z.string(),
+    	discussionPoints: z.string(),
+    	takeaways: z.string(),
+    })
+
+    export const generateSummary = async (comments: any[]) => {
+    	console.log('Generating summary for', comments.length, 'comments...')
+
+    	const { object: summary } = await generateObject({
+    		// Using a more capable model like gpt-4o often yields better summarization
+    		// results due to stronger comprehension and pattern recognition.
+    		model: openai('gpt-4o'),
+    		prompt: `Please summarise the following comments concisely, focusing on key decisions and action items.
+        ---
+        Comments:
+        ${JSON.stringify(comments)}`,
+    		// Our Zod schema defines the output structure
+    		schema: summarySchema,
+    	})
+
+    	console.log('Summary generated:', summary)
+    	return summary
+    }
+    ```
+
+    - We import necessary modules and define our initial `summarySchema`.
+    - The `prompt` instructs the AI and includes the stringified `comments`.
+    - We chose `gpt-4o` because summarization tasks often benefit from a model with stronger comprehension abilities compared to `gpt-4o-mini`.
+    - We return `result.object`.
+
+**Builder Takeaway & SDK Connection:** `generateObject` is versatile! Use it with a Zod schema anytime you need structured JSON output from an LLM, whether for classification, summarization details, or data extraction.
+
+---
+
+#### Step 2: Wiring Up the Frontend
+
+Let's connect the button in `page.tsx` to our new server action.
+
+1.  **Import and Add State:** Open `app/(3-summarization)/summarization/page.tsx`. Import necessary hooks, types, and components. Add state for `summary` and `loading`.
+
+    ```typescript
+    // app/(3-summarization)/summarization/page.tsx
+    'use client';
+
+    import { useState } from 'react'; // Import useState
+    import { MessageList } from './message-list';
+    import { Button } from '@/components/ui/button';
+    import messages from './messages.json';
+    import { generateSummary } from './actions'; // Import the action
+    import { SummaryCard } from './summary-card'; // Import the UI component
+
+    // Define the expected type based on the action's return type
+    // This uses TypeScript utility types for automatic type safety!
+    type Summary = Awaited<ReturnType<typeof generateSummary>>;
+
+    export default function Home() {
+      const [summary, setSummary] = useState<Summary | null>(null); // State for the summary
+      const [loading, setLoading] = useState(false); // State for loading indicator
+
+      // ... rest of the component
+    ```
+
+    - **TypeScript Tip:** Using `Awaited<ReturnType<typeof generateSummary>>` automatically derives the `Summary` type from our server action's return value. This means if we change the schema in `actions.ts`, our frontend type updates automatically!
+
+2.  **Implement `onClick` Handler:** Update the "Summarize" button's `onClick`.
+
+    ```typescript
+    // Inside the Home component in page.tsx
+          <Button
+            variant={"secondary"}
+            disabled={loading}
+            onClick={async () => {
+              setLoading(true);
+              setSummary(null); // Clear previous summary
+              try {
+                // Call the server action
+                const result = await generateSummary(messages);
+                setSummary(result); // Update state with the result
+              } catch (error) {
+                // Handle potential errors:
+                // - AI might fail schema validation (rare with good prompts/schemas)
+                // - Network issues or API timeouts (especially with very large inputs)
+                console.error("Summarization failed:", error);
+                // TODO: Add user-friendly error feedback (e.g., toast notification)
+              } finally {
+                setLoading(false);
+              }
+            }}
+          >
+            {loading ? "Summarizing..." : "Summarize"}
+          </Button>
+    ```
+
+    - Handles loading state and calls the `generateSummary` action.
+    - Includes a basic `try...catch` block. In a production app, you'd add user-facing error messages here.
+
+3.  **Conditionally Render the Summary:** Add the `SummaryCard` component, displaying it only when the `summary` state has data.
+
+    ```typescript
+    // Inside the return statement of Home component in page.tsx
+      </div>
+      {/* Conditionally render the summary card */}
+      {summary && <SummaryCard {...summary} />}
+      <MessageList messages={messages} />
+    </main>
+    ```
+
+---
+
+#### Step 3: The UI - Enter Vercel v0 (`SummaryCard`)
+
+Look at `<SummaryCard {...summary} />`. Where did this polished UI come from?
+
+For this course, we've pre-built it, but this simulates the power of **Vercel v0**. In your own projects, you wouldn't need to manually code this UI.
+
+**v0 Breakout: Prototyping the `SummaryCard`**
+
+1.  **Prompt v0:** You'd ask v0 something like:
+    > "Create a React card using Tailwind and shadcn/ui. Props: `headline` (string, bold title), `context`, `discussionPoints`, `takeaways` (all strings). Show headline, then list others as bullet points."
+2.  **Iterate:** v0 gives you code and a preview. You refine with prompts or code edits.
+3.  **Copy & Paste:** Grab the final code and drop it into `summary-card.tsx`.
+
+<VisualPlaceholder description="Split screen: Left side shows the v0 prompt described above. Right side shows the generated React/Tailwind code for SummaryCard and a visual preview of the card component." />
+
+**Builder Takeaway:** v0 is your UI accelerator. It generates production-ready components from text prompts, letting you focus on the core AI logic powered by the SDK. While we used a pre-built card here, remember this rapid workflow for your own projects!
+
+---
+
+#### Step 4: Run and Observe (Initial Summary)
+
+Check your browser (ensure `pnpm run dev` is active). Click "Summarize".
+
+The initial summary might work, but it could be verbose or unstructured.
+
+<VisualPlaceholder description="Side-by-side comparison: Left shows a potentially long, paragraph-style summary generated initially. Right shows a concise, structured summary with clear sections after schema refinement." />
+
+---
+
+#### Step 5: Refining with `.describe()`
+
+Let's improve the summary using Zod's `.describe()` method in `actions.ts` to give the AI more precise instructions.
+
+Update the schema in `actions.ts`:
+
+```typescript
+// app/(3-summarization)/summarization/actions.ts
+
+// Update the summarySchema with detailed descriptions
+const summarySchema = z.object({
+	headline: z.string().describe('The main topic or title of the summary. Max 5 words.'), // Concise headline
+	context: z.string().describe(
+		'Briefly explain the situation or background that led to this discussion. Max 2 sentences.', // Length guidance
+	),
+	discussionPoints: z.string().describe('Summarize the key topics discussed. Max 2 sentences.'), // Focused points
+	takeaways: z.string().describe(
+		'List the main decisions, action items, or next steps. **Include names** for assigned tasks. Max 2-3 bullet points or sentences.', // Specific instructions!
+	),
+})
+
+// ... rest of the generateSummary function ...
+```
+
+Key Changes:
+
+Added .describe() to every field.
+
+Provided specific guidance on length and content focus (e.g., "Include names").
+
+<Callout title="Performance Note">
+	Summarizing very long conversations can take time and might hit model context limits or timeouts.
+	For production apps with extensive text, consider techniques like chunking the input or using
+	models with larger context windows.
+</Callout>
+
+Run Again!
+
+Save actions.ts, refresh the browser page, and click "Summarize" again. The output should now be much cleaner and follow your instructions more closely, especially the takeaways with assigned names!
+
+### Key Takeaways
+
+- Summarization is a core Invisible AI task for handling information overload
+- Metadata extraction helps structure summaries and make them actionable
+- The AI SDK makes it easy to summarize using `generateObject` and a schema
+- Use v0 to quickly build beautiful UI components for your AI features
+- Structured extraction and summarization are powerful together
+
+<FurtherReading
+	title="Handling Large Inputs for Summarization"
+	description="Real-world summarization often involves content that exceeds token limits."
+	links={[
+		{
+			title: 'MapReduce for LLM Summarization',
+			url: 'https://blog.langchain.dev/applying-the-map-reduce-pattern-for-llm-summarization/',
+			description: 'Breaking down large documents into manageable chunks',
+		},
+		{
+			title: 'Recursive Summarization Techniques',
+			url: 'https://platform.openai.com/docs/guides/prompt-engineering/strategy-recursively-summarize-or-process-long-documents',
+			description: "OpenAI's guide to summarizing large content",
+		},
+		{
+			title: 'Token Window Management',
+			url: 'https://sdk.vercel.ai/docs/guides/managing-tokens',
+			description: 'Best practices for working within token limits',
+		},
+	]}
+/>
+
+<DeepDive
+	title="Scaling Summarization for Larger Datasets"
+	description="How would you adapt the current Server Action to summarize 1000 comments instead of 20?"
+	content={`
+  ### Techniques for Large-Scale Summarization
+  
+  #### 1. Chunking Strategy
+  
+  Divide comments into logical groups (by topic, time, or user):
+  
+  \`\`\`typescript
+  // Group comments into manageable chunks (e.g., 10-20 per chunk)
+  const commentChunks = [];
+  for (let i = 0; i < comments.length; i += 15) {
+    commentChunks.push(comments.slice(i, i + 15));
+  }
+  \`\`\`
+  
+  #### 2. MapReduce Approach
+  
+  Summarize each chunk, then summarize the summaries:
+  
+  \`\`\`typescript
+  // Map: Generate individual summaries
+  const chunkSummaries = await Promise.all(
+    commentChunks.map(async (chunk) => {
+      const { object } = await generateObject({
+        model: openai('gpt-4o-mini'),
+        prompt: \`Summarize these comments: \${JSON.stringify(chunk)}\`,
+        schema: SummarySchema,
+      });
+      return object;
+    })
+  );
+  
+  // Reduce: Create a summary of summaries
+  const { object: finalSummary } = await generateObject({
+    model: openai('gpt-4o-mini'),
+    prompt: \`Create a final summary based on these section summaries: \${JSON.stringify(chunkSummaries)}\`,
+    schema: SummarySchema,
+  });
+  \`\`\`
+  
+  #### 3. Progressive Refinement
+  
+  Start with a basic summary, then iteratively improve it:
+  
+  \`\`\`typescript
+  // Initial simple summary (could be just metadata counts)
+  let currentSummary = {
+    mainTopics: [],
+    sentiment: "neutral",
+    actionItems: []
+  };
+  
+  // Process chunks and refine the summary
+  for (const chunk of commentChunks) {
+    const { object: chunkInsights } = await generateObject({
+      model: openai('gpt-4o-mini'),
+      prompt: \`
+        Based on these comments AND the current summary, update the summary.
+        Current summary: \${JSON.stringify(currentSummary)}
+        New comments to analyze: \${JSON.stringify(chunk)}
+      \`,
+      schema: SummarySchema,
+    });
+    
+    // Merge/update the current summary with new insights
+    currentSummary = mergeSummaries(currentSummary, chunkInsights);
+  }
+  \`\`\`
+  
+  #### 4. Parallel Processing with Rate Limiting
+  
+  Process multiple chunks simultaneously while respecting API limits:
+  
+  \`\`\`typescript
+  import pLimit from 'p-limit';
+  
+  // Limit to 5 concurrent API calls
+  const limit = pLimit(5);
+  
+  // Process all chunks with controlled concurrency
+  const chunkSummaries = await Promise.all(
+    commentChunks.map((chunk) => 
+      limit(() => summarizeChunk(chunk))
+    )
+  );
+  \`\`\`
+  
+  #### 5. Selective Summarization
+  
+  Only summarize the most relevant comments:
+  
+  \`\`\`typescript
+  // First, classify comments by importance
+  const { object: classification } = await generateObject({
+    model: openai('gpt-4o-mini'),
+    prompt: \`Classify these comments by importance (high, medium, low): \${JSON.stringify(comments)}\`,
+    schema: z.object({
+      highPriority: z.array(z.number()),  // indices of important comments
+      mediumPriority: z.array(z.number()),
+      lowPriority: z.array(z.number()),
+    }),
+  });
+  
+  // Only fully summarize the high and medium priority comments
+  const importantComments = [
+    ...classification.highPriority.map(i => comments[i]),
+    ...classification.mediumPriority.map(i => comments[i])
+  ];
+  \`\`\`
+  `}
+/>
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Knowledge Check</h3>
+	<div class="space-y-8">
+		<MultipleChoiceQuestion
+			question="When using `generateObject` for summarization, why is defining a Zod schema beneficial?"
+			choices={[
+				{ id: 'speed', text: 'It makes the AI model run faster.' },
+				{
+					id: 'structure',
+					text: 'It ensures the summary is returned in a predictable JSON structure with specific fields (like headline, takeaways).',
+				},
+				{ id: 'cost', text: 'It significantly reduces the cost of the API call.' },
+				{ id: 'textOnly', text: 'It forces the output to be plain text only.' },
+			]}
+			correctAnswerId="structure"
+			feedback={{
+				correct:
+					"Correct! The schema defines the 'shape' of the data you want back, ensuring consistency and making it easy to use in your UI.",
+				incorrect:
+					'While schemas help ensure usable output, their primary benefit with `generateObject` is defining the structure, not directly impacting speed or cost.',
+			}}
+		/>
+		<MultipleChoiceQuestion
+			question="In the refined summarization example, how did we encourage the AI to include names in the 'takeaways' section?"
+			choices={[
+				{ id: 'prompt', text: "By adding 'Include names' to the main prompt." },
+				{ id: 'model', text: "By switching to a specific 'names-aware' AI model." },
+				{
+					id: 'describe',
+					text: "By adding '.describe(\"... Include names ...\")' to the 'takeaways' field in the Zod schema.",
+				},
+				{ id: 'post', text: "By post-processing the AI's output to manually add names." },
+			]}
+			correctAnswerId="describe"
+			feedback={{
+				correct:
+					'Exactly! The `.describe()` method allows you to provide specific instructions for individual fields within your schema.',
+				incorrect:
+					"While you could add it to the main prompt, `.describe()` lets you give targeted instructions directly tied to the specific 'takeaways' field in the schema.",
+			}}
+		/>
+		<MultipleChoiceQuestion
+			question="What role did Vercel v0 play conceptually in this lesson?"
+			choices={[
+				{ id: 'ai', text: 'It performed the actual summarization using its own AI model.' },
+				{ id: 'sdk', text: 'It replaced the need for the Vercel AI SDK.' },
+				{
+					id: 'ui',
+					text: 'It allowed for rapid prototyping and generation of the UI component (`SummaryCard`) used to display the summary.',
+				},
+				{ id: 'db', text: 'It stored the generated summaries in a database.' },
+			]}
+			correctAnswerId="ui"
+			feedback={{
+				correct:
+					'Correct! v0 is a tool for quickly building UI components from prompts, complementing the AI SDK which handles the AI logic.',
+				incorrect:
+					"v0's role here is focused on generating the frontend UI, not the AI summarization itself, which is handled by the AI SDK and the chosen LLM.",
+			}}
+		/>
+	</div>
+</div>
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Reflection: Summarization Opportunities</h3>
+	<p className="text-lg mb-4">
+		Where in your own projects or daily tools do you encounter long pieces of text (emails,
+		documents, comment threads, code reviews) that could benefit from automatic summarization? How
+		would you structure the summary using a Zod schema? What specific fields (`headline`,
+		`action_items`, `sentiment`, etc.) would be most valuable?
+	</p>
+	<Textarea placeholder="Type your reflection here..." className="min-h-[150px] w-full" />
+	<Button className="mt-4">Save Reflection</Button>
+</div>
+
+---
+
+## What's Next: Precise Data with Structured Extraction
+
+We've classified and summarized. Now, let's get even more precise by extracting specific details from text using `generateObject` and refined Zod schemas.
+
+In Lesson 2.4, you'll tackle structured extraction for appointments, handling challenges like relative dates, and display the results in a polished UI prototyped with v0.

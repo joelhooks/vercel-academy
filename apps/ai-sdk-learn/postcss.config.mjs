@@ -1,3 +1,6 @@
-import config from '@vercel/geist/config/postcss/with-tailwindcss'
-
-export default config
+export default {
+	plugins: {
+		tailwindcss: {},
+		autoprefixer: {},
+	},
+}

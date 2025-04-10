@@ -1,5 +1,5 @@
 import React from 'react'
-import { AlertCircle, Info, AlertTriangle, CheckCircle } from 'lucide-react'
+import { AlertCircle, Info, AlertTriangle, CheckCircle, LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type CalloutType = 'info' | 'warning' | 'error' | 'success'
@@ -8,6 +8,7 @@ interface CalloutProps {
 	type?: CalloutType
 	title?: string
 	children: React.ReactNode
+	icon?: LucideIcon
 }
 
 const icons = {
@@ -27,8 +28,8 @@ const styles = {
 		'bg-green-50 border-green-200 text-green-800 dark:bg-green-950 dark:border-green-900 dark:text-green-200',
 }
 
-export function Callout({ type = 'info', title, children }: CalloutProps) {
-	const Icon = icons[type]
+export function Callout({ type = 'info', title, children, icon: CustomIcon }: CalloutProps) {
+	const Icon = CustomIcon || icons[type]
 
 	return (
 		<div className={cn('border-l-4 p-4 my-6 rounded-r-md', styles[type])}>

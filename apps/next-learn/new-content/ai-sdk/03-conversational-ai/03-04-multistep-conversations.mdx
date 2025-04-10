@@ -1,0 +1,427 @@
+---
+title: 'Multi-Step & Generative UI'
+description: 'Build chatbots that perform complex tasks requiring multiple tool calls. Manage conversation state and render dynamic Generative UI components based on tool results.'
+summary:
+  current: You can build chatbots that perform multi-step tasks.
+  next: Review the course and explore next steps.
+---
+
+# Multi-Step Conversations & Generative UI
+
+Previous lesson established AI tool calls (`getWeather`). Problem: Model generates tool call, stops. Doesn't use result for final answer. Raw JSON output poor UX.
+
+<VideoPlaceholder
+	title="Closing the Loop: `maxSteps` & Generative UI"
+	brief={`
+    **Video Goal:** 1) Add \`maxSteps\` to \`useChat\`, run weather query, show final text answer appearing *after* tool call. 2) Modify frontend rendering logic to swap JSON for \`<Weather />\` component, run again, show visual component + final text.
+    **Duration:** 3-5 minutes
+    **Style:** Screencast/Demo
+    **Content Outline:**
+    1. Explain the issue with the current UI showing raw JSON
+    2. Add maxSteps to useChat in page.tsx
+    3. Run and show how tool results now get fed back to the model
+    4. Update the rendering logic to use the Weather component
+    5. Run again to show the complete experience with UI components
+    6. Explain the generative UI pattern
+  `}
+/>
+
+**Goal:** Enable multi-step conversations using `useChat` `maxSteps` option. Feed tool results back to model. Implement **Generative UI**: Render tool results using custom React component (`Weather`).
+
+<Callout type="info" title="Project Context">
+	Modify frontend (`app/(5-chatbot)/chat/page.tsx`) and potentially weather component
+	(`app/(5-chatbot)/chat/weather.tsx`). API route (`route.ts`) remains unchanged.
+</Callout>
+
+---
+
+### The Problem: Broken Conversation Flow & Raw Data
+
+Current flow halts after tool execution: User asks -> Model calls tool -> Tool executes -> **(End)**.
+
+Model requires tool result to formulate final text answer. Displaying raw JSON (`toolInvocations`) provides poor user experience.
+
+---
+
+### Solution Part 1: Multi-Step Conversations with `maxSteps`
+
+`useChat` hook enables automatic multi-step interactions via `maxSteps`.
+
+- `maxSteps: 1` (Default): Conversation ends after first model response (text or tool call).
+- `maxSteps: >1`: If model calls tool, `useChat` automatically:
+  1.  Executes tool via API route.
+  2.  Sends tool _result_ back to model with original messages.
+  3.  Allows model to generate final text response using result.
+  4.  Repeats up to `maxSteps` if further tool calls occur.
+
+**Implementation:** Set `maxSteps` in `useChat` call.
+
+1.  **Update `page.tsx`:** Modify `useChat` options.
+
+    ```tsx
+    // app/(5-chatbot)/chat/page.tsx
+    'use client'
+
+    import { useChat, type Message } from 'ai/react'
+    import Weather from './weather' // Ensure Weather component is imported
+
+    export default function Chat() {
+    	const { messages, input, handleInputChange, handleSubmit } = useChat({
+    		// Enable multi-step conversations
+    		maxSteps: 5, // Allows up to 5 steps (e.g., User -> ToolCall -> ToolResult -> FinalAnswer)
+    	})
+
+    	// ... rest of component ...
+    	return (
+    		<div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+    			{messages.map((m: Message) => (
+    				// ... message rendering logic (updated below) ...
+    				<div key={m.id} className="whitespace-pre-wrap mb-4 border-b pb-2">
+    					<strong>{m.role === 'user' ? 'User: ' : 'AI: '}</strong>
+    					{/* Message rendering logic will be updated in next step */}
+    					{m.content ? <span>{m.content}</span> : null}
+    					{m.toolInvocations?.map((t) => <pre key={t.toolCallId}>{JSON.stringify(t)}</pre>)}
+    				</div>
+    			))}
+    			<form onSubmit={handleSubmit}>
+    				{/* ... input field ... */}
+    				<input
+    					className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
+    					value={input}
+    					placeholder="Say something..."
+    					onChange={handleInputChange}
+    				/>
+    			</form>
+    		</div>
+    	)
+    }
+    ```
+
+2.  **Save & Test:** Run dev server. Go to `http://localhost:3000/chat`. Ask "What's the weather in San Francisco?".
+
+Observe: Tool call JSON appears briefly. _Then_, new AI text message appears, answering question using weather data. `maxSteps` enabled automatic round trip.
+
+<VisualPlaceholder description="GIF showing chat interaction: User asks for weather. Raw tool call JSON appears briefly. Then, a final text message from the AI appears, incorporating the weather data." />
+
+---
+
+### Solution Part 2: Generative UI
+
+Displaying raw JSON is suboptimal. **Generative UI** uses AI tool results to render custom React components. Model generates _data_ (tool result); frontend maps data to components.
+
+The `Weather` component (`app/(5-chatbot)/chat/weather.tsx`) displays temperature, conditions, and humidity visually, similar to a smartphone weather widget.
+
+**Implementation:** Conditionally render `Weather` component based on tool invocation result.
+
+1.  **Understand Data Structure:** `getWeather` tool (Lesson 3.3) returns object like this:
+
+    ```typescript
+    // Example weather data structure from tool result
+    const exampleWeatherResult = {
+    	city: 'San Francisco',
+    	temperature: 12.3,
+    	weatherCode: 1, // Corresponds to a weather condition like 'Partly cloudy'
+    	humidity: 68,
+    }
+    ```
+
+2.  **Update Message Rendering:** Modify `map` function in `page.tsx`. Check for `getWeather` tool _result_. Pass `t.result` as props to `Weather`. Show loading state during tool call. Handle potential errors.
+
+```tsx
+// app/(5-chatbot)/chat/page.tsx
+'use client'
+
+import { useChat, type Message } from 'ai/react'
+import Weather from './weather'
+
+export default function Chat() {
+	const { messages, input, handleInputChange, handleSubmit } = useChat({
+		maxSteps: 5,
+		// id: 'weather-chat', // Add if using component interactivity
+	})
+
+	return (
+		<div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+			{messages.map((m: Message) => (
+				<div key={m.id} className="whitespace-pre-wrap mb-4 border-b pb-2">
+					<strong>{m.role === 'user' ? 'User: ' : 'AI: '}</strong>
+
+					{/* Render standard text content if present */}
+					{m.content && <span>{m.content}</span>}
+
+					{/* Render Tool Invocations */}
+					{m.toolInvocations?.map((toolInvocation) => {
+						const { toolName, state, toolCallId, result } = toolInvocation
+
+						if (toolName === 'getWeather') {
+							if (state === 'call') {
+								// Show loading state while tool executes
+								return (
+									<div
+										key={toolCallId}
+										className="text-sm text-gray-500 ml-4 mt-2 p-2 bg-gray-100 rounded animate-pulse"
+									>
+										Checking weather data...
+									</div>
+								)
+							} else if (state === 'result') {
+								// Handle potential errors returned by the tool
+								if (result?.error) {
+									return (
+										<div
+											key={toolCallId}
+											className="text-sm text-red-600 ml-4 mt-2 p-2 bg-red-100 rounded"
+										>
+											Error: {result.error}
+										</div>
+									)
+								}
+								// Render the Weather component with the successful result data
+								return (
+									<div className="ml-4 mt-2" key={toolCallId}>
+										<Weather weatherData={result} />
+									</div>
+								)
+							}
+						}
+						// Optionally display other tool calls/results as raw JSON for debugging
+						// return <pre key={toolCallId}>{JSON.stringify(toolInvocation)}</pre>;
+						return null // Hide non-weather tool calls/results for cleaner UI
+					})}
+				</div>
+			))}
+
+			{/* Input form remains the same */}
+			<form onSubmit={handleSubmit}>
+				<input
+					className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
+					value={input}
+					placeholder="Say something..."
+					onChange={handleInputChange}
+				/>
+			</form>
+		</div>
+	)
+}
+```
+
+**Code Breakdown:**
+
+- **Conditional Rendering:** Checks `toolName` and `state` (`'call'` or `'result'`).
+- **Loading State:** Displays "Checking weather..." message when `state === 'call'`.
+- **Error Handling:** Checks `result?.error` before rendering component. Displays error message if present.
+- **Prop Passing:** Passes validated `toolInvocation.result` to `Weather` component's `weatherData` prop.
+
+3.  **Save & Test:** Refresh chat page. Ask "What's the weather in San Francisco?".
+
+Observe:
+
+- "Checking weather..." appears briefly.
+- Styled `Weather` component renders with data.
+- Final AI text answer appears after component.
+
+<VisualPlaceholder description="Screenshot of chat UI. User asks for weather. A styled 'Weather' card component appears, visually displaying temperature, city, and condition. Final text answer follows." />
+
+<Callout type="warning" title="Tool Result Error Handling">
+	Robust applications should always check for potential errors within tool `execute` functions
+	(Lesson 3.3) and handle corresponding `result.error` states gracefully in the UI, providing
+	informative feedback to user.
+</Callout>
+
+**Builder Takeaway:** Generative UI maps specific tool results to custom components. Check `toolInvocation.state` ('call', 'result') and handle loading/error states. Improves UX significantly over raw data display.
+
+---
+
+#### Step 4: Making Generative UI Interactive
+
+Make the Generative UI component (`Weather`) trigger new chat interactions. Enable users to act directly on the information presented by the AI.
+
+**1. Share Chat State (`id`)**
+
+Connect the main chat page and individual components to the same underlying chat state. Assign a unique `id` to the `useChat` hook in the main page.
+
+Modify `app/(5-chatbot)/chat/page.tsx`:
+
+```tsx
+// app/(5-chatbot)/chat/page.tsx
+// ... imports ...
+export default function Chat() {
+	const { messages, input, handleInputChange, handleSubmit, append } = useChat({
+		// Ensure append is destructured
+		maxSteps: 5,
+		id: 'weather-chat', // Assign unique ID
+	})
+	// ... rest of component ...
+}
+```
+
+This `id` ensures that any `useChat` hook called with `id: 'weather-chat'` will access the same messages, state, and functions.
+
+**2. Access `append` in Component (`Weather.tsx`)**
+
+Update the `Weather` component to access the shared chat state and trigger new messages.
+
+Modify `app/(5-chatbot)/chat/weather.tsx`:
+
+```tsx
+// app/(5-chatbot)/chat/weather.tsx
+'use client' // Required for hook and state
+
+import { useChat } from 'ai/react'
+import { useState } from 'react'
+
+// Define props based on expected weather data structure
+interface WeatherProps {
+	weatherData: {
+		city: string
+		temperature: number
+		weatherCode: number // Or string, depending on your data
+		humidity: number
+	}
+}
+
+export default function Weather({ weatherData }: WeatherProps) {
+	// Access the SAME chat instance via ID to get the append function
+	const { append } = useChat({ id: 'weather-chat' })
+	const [buttonClicked, setButtonClicked] = useState(false)
+
+	const handleButtonClick = () => {
+		append({ role: 'user', content: 'Get weather for a random city' })
+		setButtonClicked(true) // Disable button after click
+	}
+
+	// Basic weather display (customize as needed)
+	return (
+		<div className="p-4 border rounded-lg bg-blue-50 text-blue-900 shadow">
+			<h4 className="font-semibold">Weather in {weatherData.city}</h4>
+			<p>Temperature: {weatherData.temperature}°C</p>
+			<p>Humidity: {weatherData.humidity}%</p>
+			{/* Add more details based on weatherCode if desired */}
+			<Button
+				onClick={handleButtonClick}
+				disabled={buttonClicked}
+				className="mt-2"
+				variant="outline" // Example styling
+				size="sm" // Example styling
+			>
+				{buttonClicked ? 'Asked for random...' : 'Random City?'}
+			</Button>
+		</div>
+	)
+}
+```
+
+This code:
+
+- Imports `useChat`, `Button`, and `useState`.
+- Calls `useChat({ id: 'weather-chat' })` to retrieve the `append` function.
+- Adds a button "Random City?".
+- Defines an `onClick` handler (`handleButtonClick`) that calls `append` with a new user message.
+- Uses `useState` to disable the button after it's clicked, preventing duplicate requests.
+
+**3. Test Interactivity**
+
+- Save changes to `page.tsx` and `weather.tsx`.
+- Refresh the chat page (`http://localhost:3000/chat`).
+- Ask for weather in a specific city (e.g., "Weather in London?").
+- Observe the `Weather` component render.
+- Click the "Random City?" button within the `Weather` component.
+
+Expected Outcome: Clicking the button adds "Get weather for a random city" as a new user message in the chat history. The AI should then respond, likely calling the `getWeather` tool again for a random location and rendering a new `Weather` component.
+
+**Builder Takeaway:** Combining `useChat` with a shared `id` and the `append` function transforms static Generative UI components into interactive elements that can drive the conversation forward, creating more dynamic and useful AI applications.
+
+---
+
+### Key Takeaways
+
+- **`maxSteps`:** Enables multi-turn tool conversations. Feeds results back to model.
+- **Generative UI:** Renders custom components using tool result data (`toolInvocations.state === 'result'`).
+- **Component Mapping:** Frontend logic maps `toolName`/`result` to specific UI components.
+- **State Handling:** Check `toolInvocation.state` ('call', 'result') for loading/error UI.
+- **Interactivity:** Components trigger new turns via shared `useChat` `id` and `append`.
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Knowledge Check</h3>
+	<div className="space-y-8">
+		<MultipleChoiceQuestion
+			question="What does setting `maxSteps: 5` in the `useChat` hook enable?"
+			choices={[
+				{ id: 'limit', text: 'Limits the user to only sending 5 messages.' },
+				{
+					id: 'multi',
+					text: 'Allows the conversation to automatically continue for up to 5 steps (e.g., user -> tool call -> tool result -> final answer) after the initial user message.',
+				},
+				{ id: 'speed', text: 'Makes the AI model respond 5 times faster.' },
+				{ id: 'tools', text: 'Allows the definition of up to 5 different tools.' },
+			]}
+			correctAnswerId="multi"
+			feedback={{
+				correct:
+					'Correct! `maxSteps` controls the automatic back-and-forth between the model, tool calls, and tool results to arrive at a final answer.',
+				incorrect:
+					"`maxSteps` defines the number of potential interaction 'steps' in a single turn after the user speaks, primarily for handling tool use.",
+			}}
+		/>
+		<MultipleChoiceQuestion
+			question="In the context of Generative UI with the AI SDK, what does the AI model actually 'generate'?"
+			choices={[
+				{ id: 'react', text: 'The React component code itself.' },
+				{ id: 'css', text: 'The CSS stylesheets for the component.' },
+				{
+					id: 'data',
+					text: 'The structured data (as a tool result) needed to populate a pre-existing React component.',
+				},
+				{ id: 'html', text: 'The final HTML markup for the UI.' },
+			]}
+			correctAnswerId="data"
+			feedback={{
+				correct:
+					'Correct! The LLM generates the *data* by deciding to call a tool and returning its result. Your frontend code then uses this data as props for a specific component.',
+				incorrect:
+					'The AI SDK focuses on the AI interaction. The model generates the *data* via tool results; rendering the UI component based on that data is handled by your frontend React code.',
+			}}
+		/>
+		<MultipleChoiceQuestion
+			question="How can a Generative UI component (like the Weather card) trigger a new message in the chat conversation?"
+			choices={[
+				{ id: 'state', text: "By directly modifying the parent component's state." },
+				{ id: 'api', text: 'By making a direct call to the `/api/chat` endpoint.' },
+				{
+					id: 'hook',
+					text: 'By using the `useChat` hook (with the same `id`) inside the component and calling the `append` function.',
+				},
+				{ id: 'event', text: 'By dispatching a custom browser event.' },
+			]}
+			correctAnswerId="hook"
+			feedback={{
+				correct:
+					'Correct! Using `useChat` with the same `id` allows components anywhere in the tree to access the chat state and functions like `append`.',
+				incorrect:
+					"Direct state modification or API calls bypass the `useChat` state management. Using the hook's `append` function ensures the message is added correctly to the conversation flow.",
+			}}
+		/>
+	</div>
+</div>
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Reflection: Generative UI Ideas</h3>
+	<p className="text-lg mb-4">
+		Beyond weather: What other tool results could be visualized with custom components? Think stock
+		prices (chart), product lookup (card), flight search (results list). How would component props
+		map to tool result data? What interactions within component could trigger new chat turns?
+	</p>
+	<Textarea
+		placeholder="Tool Name: ...&#10;Component Props: ...&#10;Interaction Idea: ..."
+		className="min-h-[150px] w-full"
+	/>
+	<Button className="mt-4">Save Reflection</Button>
+</div>
+
+---
+
+## Finally: Course Wrap-up & Your AI Future
+
+You've built a sophisticated chatbot with multi-step tool use and generative UI! It's time to wrap up.
+
+This final lesson provides resources, next steps, and guidance for continuing your AI development journey with the Vercel AI SDK and beyond.

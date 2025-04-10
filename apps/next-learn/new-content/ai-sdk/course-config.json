@@ -1,0 +1,116 @@
+{
+  "id": "ai-sdk",
+  "type": "module",
+  "introduction": "index.mdx",
+  "resources": [
+    {
+      "id": "01-fundamentals",
+      "type": "section",
+      "title": "Fundamentals",
+      "resources": [
+        {
+          "id": "01-01-llms",
+          "type": "lesson",
+          "path": "01-fundamentals/01-01-llms.mdx",
+          "dbId": "lesson_twioa"
+        },
+        {
+          "id": "01-02-prompting",
+          "type": "lesson",
+          "path": "01-fundamentals/01-02-prompting.mdx",
+          "dbId": "lesson_8ju64"
+        },
+        {
+          "id": "01-03-ai-sdk-setup",
+          "type": "lesson",
+          "path": "01-fundamentals/01-03-ai-sdk-setup.mdx",
+          "dbId": "lesson_dxv46"
+        },
+        {
+          "id": "01-04-extraction",
+          "type": "lesson",
+          "path": "01-fundamentals/01-04-extraction.mdx",
+          "dbId": "lesson_tnb9n"
+        }
+      ],
+      "dbId": "section_3n16d"
+    },
+    {
+      "id": "02-invisible-ai",
+      "type": "section",
+      "title": "Invisible AI",
+      "resources": [
+        {
+          "id": "02-01-intro",
+          "type": "lesson",
+          "path": "02-invisible-ai/02-01-intro.mdx",
+          "dbId": "lesson_w8nhc"
+        },
+        {
+          "id": "02-02-classification",
+          "type": "lesson",
+          "path": "02-invisible-ai/02-02-classification.mdx",
+          "dbId": "lesson_v92hq"
+        },
+        {
+          "id": "02-03-summarization",
+          "type": "lesson",
+          "path": "02-invisible-ai/02-03-summarization.mdx",
+          "dbId": "lesson_5ll6q"
+        },
+        {
+          "id": "02-04-structured-extraction",
+          "type": "lesson",
+          "path": "02-invisible-ai/02-04-structured-extraction.mdx",
+          "dbId": "lesson_yn59u"
+        },
+        {
+          "id": "02-05-bonus-supercharge-with-v0",
+          "type": "lesson",
+          "path": "02-invisible-ai/02-05-bonus-supercharge-with-v0.mdx",
+          "dbId": "lesson_lnsga"
+        }
+      ],
+      "dbId": "section_vccdz"
+    },
+    {
+      "id": "03-conversational-ai",
+      "type": "section",
+      "title": "Conversational AI",
+      "resources": [
+        {
+          "id": "03-01-basic-chatbot",
+          "type": "lesson",
+          "path": "03-conversational-ai/03-01-basic-chatbot.mdx",
+          "dbId": "lesson_n93y4"
+        },
+        {
+          "id": "03-02-system-prompt",
+          "type": "lesson",
+          "path": "03-conversational-ai/03-02-system-prompt.mdx",
+          "dbId": "lesson_qswiw"
+        },
+        {
+          "id": "03-03-tools",
+          "type": "lesson",
+          "path": "03-conversational-ai/03-03-tools.mdx",
+          "dbId": "lesson_7wvdk"
+        },
+        {
+          "id": "03-04-multistep-conversations",
+          "type": "lesson",
+          "path": "03-conversational-ai/03-04-multistep-conversations.mdx",
+          "dbId": "lesson_soaft"
+        },
+        {
+          "id": "03-05-completed",
+          "type": "lesson",
+          "path": "03-conversational-ai/03-05-completed.mdx",
+          "dbId": "lesson_jm2a5"
+        }
+      ],
+      "dbId": "section_w16zz"
+    }
+  ],
+  "dbId": "module_gxf96"
+}

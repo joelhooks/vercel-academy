@@ -50,6 +50,8 @@ export function CourseNavigation({
 
 	const isFullyCompleted = totalChapters > 0 && completedChapters >= totalChapters
 
+	console.log(moduleNavigation)
+
 	return (
 		<SidebarGroup>
 			<SidebarGroupLabel>Chapters</SidebarGroupLabel>
@@ -108,9 +110,12 @@ function ChapterList({ lang, navigation }: { lang?: string; navigation: ModuleNa
 								<NavLink
 									href={`${langPrefix}/${navigation.slug}/${resource.slug}`}
 									isActive={isCurrentLesson}
+									className="flex min-h-[32px] items-center"
 								>
-									<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full">
-										<span>{resource.title}</span>
+									<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full overflow-hidden">
+										<span className="block overflow-hidden whitespace-nowrap text-ellipsis mr-2">
+											{resource.title}
+										</span>
 										<StatusIndicator isComplete={false} />
 									</div>
 									<div
@@ -146,7 +151,7 @@ function ChapterList({ lang, navigation }: { lang?: string; navigation: ModuleNa
 									</CollapsibleTrigger>
 									<CollapsibleContent>
 										<div className="pl-3 pb-1 pt-1">
-											<SidebarMenu>
+											<SidebarMenu className="space-y-1">
 												{resource.lessons.map((lesson) => {
 													const currentIndex = ++lessonIndex
 													const isCurrentLesson = lesson.slug === currentLessonSlug
@@ -156,9 +161,12 @@ function ChapterList({ lang, navigation }: { lang?: string; navigation: ModuleNa
 																<NavLink
 																	href={`${langPrefix}/${navigation.slug}/${lesson.slug}`}
 																	isActive={isCurrentLesson}
+																	className="flex min-h-[32px] items-center"
 																>
-																	<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full">
-																		<span>{lesson.title}</span>
+																	<div className="group-data-[collapsible=icon]:hidden inline-flex justify-between items-center w-full overflow-hidden">
+																		<span className="block overflow-hidden whitespace-nowrap text-ellipsis mr-2">
+																			{lesson.title}
+																		</span>
 																		<StatusIndicator isComplete={false} />
 																	</div>
 																	<div

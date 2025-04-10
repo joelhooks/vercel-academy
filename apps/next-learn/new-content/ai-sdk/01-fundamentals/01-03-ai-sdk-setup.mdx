@@ -1,0 +1,183 @@
+---
+title: 'AI SDK Dev Setup'
+description: 'Set up your local dev environment for the Vercel AI SDK: clone repo, install dependencies (pnpm), configure OpenAI API key (.env), and verify setup.'
+summary:
+  current: Now that your local environment is set up.
+  next: Write your first AI script to extract structured data using the SDK.
+---
+
+# Project Setup - Get Your Hands Dirty!
+
+Alright, builder! You've grasped the core LLM concepts. Now for the exciting part: setting up your local development environment. This is where you _really_ get your hands dirty and prepare to build the cool AI features we've been talking about, like automatic summarization and intelligent chatbots, using the Vercel AI SDK.
+
+<VideoPlaceholder
+	title="Quick Start: Project Setup & Verification"
+	brief={`
+    **Video Goal:** Quick visual walkthrough of \`git clone\`, \`pnpm install\`, creating \`.env\` from \`.env.example\`, adding API key (blurring/masking key), and running \`pnpm tsx env-check.ts\` successfully.
+    **Duration:** 3-5 minutes
+    **Style:** Screencast
+    **Content Outline:**
+    1. Clone the repository
+    2. Navigate to project directory
+    3. Install dependencies with pnpm
+    4. Create .env from .env.example
+    5. Add API key (with key blurred for security)
+    6. Run verification script
+    7. Show successful output
+  `}
+/>
+
+**Goal:** Get the starter project running locally, securely configure your OpenAI API key, and confirm everything works so you're ready to start coding AI in the next lesson. Let's go!
+
+**Prerequisites:** Make sure you have [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git), [Node.js](https://nodejs.org/en/download/package-manager) (v18 or later recommended), and `pnpm` ([install guide](https://pnpm.io/installation)) installed. You'll also need an [OpenAI account and API key](https://platform.openai.com/account/api-keys).
+
+---
+
+### Step 1: Getting the Code
+
+First, let's grab the starter project code. This repository contains all the files and setup needed for the course. Open your terminal (or command prompt) and run this command to clone it:
+
+```bash
+git clone https://github.com/nicoalbanese/build-an-ai-app-starter-dec-24.git
+```
+
+This copies the project files to your computer.
+
+### Step 2: Navigating Into the Project
+
+Now, move into the project directory you just cloned. Use the `cd` (change directory) command:
+
+```bash
+cd build-an-ai-app-starter-dec-24
+```
+
+Your terminal prompt should now show you're inside the `build-an-ai-app-starter-dec-24` folder.
+
+### Step 3: Installing Dependencies
+
+Next, install the necessary libraries (AI SDK, Next.js, etc.). This project uses `pnpm` for fast and efficient package management. Run:
+
+```bash
+pnpm install
+```
+
+<Callout title="Using npm or Yarn?">
+	While `pnpm` is recommended for this project (due to the lockfile), you can *try* using `npm
+	install` or `yarn install`. Be aware you might encounter slight differences if dependency versions
+	vary. To install pnpm globally, run: `npm install -g pnpm`.
+</Callout>
+
+This might take a minute or two.
+
+<VisualPlaceholder description="Terminal showing the 'pnpm install' command running and completing successfully." />
+
+### Step 4: Setting Up Secrets (Your API Key)
+
+AI models need API keys for access. These are secrets and _never_ go directly into your code. We use a special `.env` file for this.
+
+**A. Copying the Example File**
+
+Create your personal environment file by copying the provided example:
+
+```bash
+cp .env.example .env
+```
+
+This creates a `.env` file which is already listed in `.gitignore`, keeping your key safe from accidental commits.
+
+**B. Finding Your OpenAI API Key**
+
+You need an OpenAI key to use models like GPT-4o-mini with the AI SDK.
+
+- Head to the [OpenAI API Keys page](https://platform.openai.com/account/api-keys).
+- Log in or sign up.
+- Click `+ Create new secret key`, name it (e.g., "AI SDK Course").
+- **Crucial:** Copy the key _immediately_. You won't see it again!
+
+**C. Editing the `.env` File**
+
+Open the `.env` file in your code editor. Find this line:
+
+```text
+OPENAI_API_KEY="sk-proj-*************"
+```
+
+Replace the placeholder (sk-proj-...) with your actual OpenAI API key. Keep the quotes. Save the file!
+
+<VisualPlaceholder description="Code editor showing the `.env` file with the OPENAI_API_KEY line highlighted and the key pasted in." />
+
+D. Security First!
+
+<Callout type="warning" title="Protect Your API Key!">
+	Seriously, never commit your `.env` file or share API keys! Leaked keys = potential costs. The
+	`.gitignore` helps, but always be vigilant.
+</Callout>
+
+### Step 5: Making Sure It Works!
+
+Let's verify your setup. The project has a simple script (env-check.ts) to confirm your API key is loaded correctly. Run it:
+
+```bash
+pnpm tsx env-check.ts
+```
+
+You should see this in your terminal (with your key instead of 'sk-proj...'):
+
+```bash
+Hello, Conf!
+sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx... // <-- Your key confirms success!
+```
+
+<VisualPlaceholder description="Terminal showing the successful output of 'pnpm tsx env-check.ts'." />
+
+### Setup Success Checklist
+
+Quickly verify your setup before moving on:
+
+<SetupChecklist
+	items={[
+		{ id: 'clone', text: 'Project repository cloned and dependencies installed?' },
+		{ id: 'env_create', text: '.env file created and API key configured?' },
+		{ id: 'verify', text: 'env-check.ts ran successfully and showed your key?' },
+		{ id: 'ready', text: 'Ready to start building AI features?' },
+	]}
+/>
+
+### Common Setup Issues & Troubleshooting
+
+<Details summary="Stuck? Click here for common solutions">
+	<ul className="list-disc space-y-2 pl-5 mt-2 text-sm">
+		<li>
+			<strong>`git: command not found`</strong>: You need to install Git. See the official [Git
+			installation guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+		</li>
+		<li>
+			<strong>`pnpm: command not found`</strong>: Install pnpm globally: `npm install -g pnpm`. Then
+			try `pnpm install` again.
+		</li>
+		<li>
+			<strong>Node.js version errors during `pnpm install`</strong>: Ensure you have Node.js v18 or
+			later. Use a tool like [nvm](https://github.com/nvm-sh/nvm) to manage Node versions easily.
+		</li>
+		<li>
+			<strong>`env-check.ts` shows `undefined` or errors:</strong>* Did you rename `.env.example`
+			exactly to `.env` (leading dot, no extra extensions)? * Is the key name exactly
+			`OPENAI_API_KEY` inside `.env`? * Did you copy the *entire* key from OpenAI (starts with
+			`sk-`...)? * Did you save the `.env` file after pasting the key? * Are you running the command
+			from the *root* of the `build-an-ai-app-starter-dec-24` directory?
+		</li>
+		<li>
+			<strong>Other install errors (`module not found`, etc.)</strong>: Try deleting `node_modules`
+			and `pnpm-lock.yaml` and run `pnpm install` again. If issues persist, check your Node/pnpm
+			versions or seek help.
+		</li>
+	</ul>
+</Details>
+
+---
+
+## Moving On: Extraction - Your First AI Script
+
+Congratulations! Your development environment is set up and ready. You've taken the crucial first step.
+
+Now you'll finally write and run code that uses the AI SDK to interact with an LLM and perform a practical task: extracting structured data from text. Let's start building!

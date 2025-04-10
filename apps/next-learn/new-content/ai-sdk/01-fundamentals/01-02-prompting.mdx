@@ -1,0 +1,341 @@
+---
+title: 'Prompting Fundamentals'
+description: 'Master core prompting techniques (Zero-Shot, Few-Shot, Chain-of-Thought) to effectively instruct LLMs. Use the Vercel AI SDK Playground for iteration.'
+summary:
+  current: Now that you know core prompting techniques.
+  next: Set up your local development environment for the AI SDK.
+---
+
+# The Power (and Nuances) of Prompting
+
+You've got your LLM API basics down. Now for the secret sauce - how to actually talk to these models. Prompting is the skill that separates AI amateurs from pros.
+
+<VideoPlaceholder
+	title="Prompting Techniques in Action (AI SDK Playground)"
+	brief={`
+    **Video Goal:** Demonstrate Zero-shot, Few-shot, CoT prompts *using the Vercel AI SDK Playground*. Show how changing the prompt/technique directly impacts output for a simple task (e.g., classification or short generation).
+    **Duration:** 3-5 minutes
+    **Style:** Screencast/Demo
+    **Content Outline:**
+    1. Open the Vercel AI SDK Playground
+    2. Demo a zero-shot prompt and its output
+    3. Modify to a few-shot prompt showing the improvement
+    4. Further modify to Chain-of-Thought showing deeper reasoning
+    5. Highlight how different techniques affect results
+  `}
+/>
+
+Think of it like a chef with ingredients. Bad ingredients = bad meal. Same with AI: bad prompt = bad output, no matter how fancy your code wrapper.
+
+Prompt mastery is your competitive edge. It's what gets the AI to actually do what you want. But remember this : **Iterate aggressively. Keep tweaking your prompts. Nothing's perfect first try.**
+
+<Callout title="Basic Prompt Structure (ICOD)">
+	Good prompts typically contain: * **I**nstruction: What task to do * **C**ontext: Background info
+	* **O**utput Indicator: Format requirements (critical for `generateObject`) * **D**ata: The actual
+	input
+</Callout>
+
+## 3 Techniques for Prompting LLMs
+
+Let's dive into three core techniques every builder needs to know:
+
+### **Zero-Shot Prompting: Just Ask!**
+
+This is the simplest form: asking the model to do something directly, without providing examples.
+
+- **Example (Conceptual):**
+  - Prompt: `Classify the sentiment (positive/negative/neutral): 'This movie was okay.'`
+  - Expected Output: `Neutral`
+- **AI SDK Context:** Great for simple `generateText` calls where the task is common (like basic summarization, Q&A). Relies heavily on the model's pre-trained knowledge.
+
+  ```typescript
+  // Simple classification with generateText
+  const { text } = await generateText({
+  	model: openai('gpt-4o-mini'),
+  	prompt: `Classify sentiment (positive/negative/neutral): '${userInput}'`,
+  })
+  // Output might be "Neutral", "neutral", "The sentiment is neutral.", etc.
+  ```
+
+- **Builder Takeaway:** Quick for straightforward tasks, but less reliable for complex instructions or specific output formats.
+
+<InlinePromptUI
+	id="zero-shot-1"
+	title="Try Zero-Shot Prompting"
+	task="Use the prompt below to classify the sentiment. See the output instantly!"
+	initialPrompt="Classify the sentiment (positive/negative/neutral): 'This movie was okay.'"
+/>
+
+### **Few-Shot Prompting: Show, Don't Just Tell**
+
+For more complex tasks or specific output formats, you provide examples _within the prompt_ to show the model the pattern or format you want it to follow.
+
+- **Example (Fictional Word):**
+
+  ```text
+  Word Definition: Farduddle - To randomly dance vigorously.
+  Word Example: After hearing the news, he started to farduddle uncontrollably.
+
+  Word Definition: Vardudel - To procrastinate by organizing pencils.
+  Word Example:
+  ```
+
+  _The model is prompted to complete the pattern._
+
+- **ICOD Breakdown of the Example:**
+  <ICODBreakdown type="few-shot" /> {/* Placeholder for your ICOD component/visual */}
+- **AI SDK Context:** Essential when using `generateObject` with Zod schemas, especially for complex structures or when you need a very specific output style from `generateText`. The examples guide the model to produce output that matches your schema or desired format more reliably.
+
+  ```typescript
+  // Guiding generateObject with a few-shot example
+  const { object } = await generateObject({
+  	model: openai('gpt-4o-mini'),
+  	schema: z.object({ category: z.enum(['A', 'B']), reason: z.string() }),
+  	prompt: `
+      Classify the following items based on the examples.
+  
+      Item: Apple
+      Category: A
+      Reason: It's a fruit.
+  
+      Item: ${userItem}
+      Category:`, // Model completes based on the pattern
+  })
+  ```
+
+- **Builder Takeaway:** Massively improves reliability for structured data (`generateObject`) and specific text formats (`generateText`). Clear labels and consistent formatting in examples are key!
+
+<InlinePromptUI
+  id="few-shot-1"
+  title="Try Few-Shot Prompting"
+  task="Complete the few-shot prompt below. Provide an example sentence for 'Vardudel'. Notice how the prior examples guide the AI."
+  initialPrompt={`Word Definition: Farduddle - To randomly dance vigorously.
+Word Example: After hearing the news, he started to farduddle uncontrollably.
+
+Word Definition: Vardudel - To procrastinate by organizing pencils.
+Word Example: `}
+allowMultiline={true}
+/>
+
+### **Chain-of-Thought (CoT) Prompting: Think Step-by-Step**
+
+Mimic human problem-solving by prompting the model to "think out loud" and break down a complex task into intermediate reasoning steps before giving the final answer.
+
+<VideoPlaceholder
+	title="Visualizing Chain-of-Thought Prompting"
+	brief={`
+    **Video Goal:** Visually explain the Chain-of-Thought (CoT) prompting technique, showing how breaking down a problem helps the AI reason more effectively.
+    **Duration:** Approx. 60-90 seconds.
+    **Style:** Use clean animation or simple graphics (no specific SDK/UI elements).
+    **Content Outline:**
+    1. **Start:** Display the complex question (e.g., "Do the odd numbers in [1, 4, 9, 10, 15, 22, 1] add up to an even number?").
+    2. **Show Prompt Structure:** Briefly show the prompt format, indicating the space after "A:" where the model's reasoning will go.
+    3. **Animate Steps:** Visually represent the reasoning steps appearing sequentially:
+        *   Box/Step 1: "Identify Odds: [1, 9, 15, 1]"
+        *   Box/Step 2: "Calculate Sum: 1 + 9 + 15 + 1 = 26"
+        *   Box/Step 3: "Check Even/Odd: 26 is even"
+        *   Box/Step 4: "Final Answer: Yes"
+    4. **Voiceover/Text Overlay:** Briefly explain that guiding the model through these steps significantly improves its ability to handle complex logic and arrive at the correct final answer reliably. Emphasize it's about structuring the *thought process*.
+  `}
+/>
+
+- **Example (Odd Numbers Sum):**
+
+  ```text
+  Q: Do the odd numbers in [1, 4, 9, 10, 15, 22, 1] add up to an even number?
+  A:
+  The odd numbers are 1, 9, 15, 1.
+  Their sum is 1 + 9 + 15 + 1 = 26.
+  26 is an even number.
+  The final answer is: Yes
+
+  Q: Do the odd numbers in [3, 6, 7, 12, 19, 20, 5] add up to an even number?
+  A:
+  ```
+
+  _The model generates the reasoning steps and the final answer._
+
+- **AI SDK Context:** Useful with `generateText` for multi-step reasoning. Can also improve `generateObject` accuracy if complex logic is needed (the CoT prompt helps the model _reach_ the correct object structure).
+
+  ```typescript
+  // Using CoT prompt structure with generateText
+  const { text } = await generateText({
+    model: openai('gpt-4o'), // Often better with more capable models
+    prompt: \`
+      Q: Calculate the total cost: 5 apples at $0.50 each, 2 bananas at $0.75 each.
+      A:
+      Cost of apples = 5 * $0.50 = $2.50
+      Cost of bananas = 2 * $0.75 = $1.50
+      Total cost = $2.50 + $1.50 = $4.00
+      The final answer is: $4.00
+
+      Q: Calculate the total cost: \${userOrder}
+      A: \` // Model generates steps and answer
+  });
+  ```
+
+- **Builder Takeaway:** Improves reliability for logic and complex reasoning. Combine with few-shot. **Often performs best with more capable models.**
+
+<InlinePromptUI
+  id="cot-1"
+  title="Try Chain-of-Thought Prompting"
+  task="Use the Chain-of-Thought structure to solve the odd number problem below. Observe how the model follows the reasoning steps."
+  initialPrompt={`Q: Do the odd numbers in [1, 4, 9, 10, 15, 22, 1] add up to an even number?
+A:
+The odd numbers are 1, 9, 15, 1.
+Their sum is 1 + 9 + 15 + 1 = 26.
+26 is an even number.
+The final answer is: Yes
+
+Q: Do the odd numbers in [3, 6, 7, 12, 19, 20, 5] add up to an even number?
+A:
+`}
+allowMultiline={true}
+/>
+
+### **Core Prompting Advice for Builders**
+
+Remember this crucial advice:
+
+1.  **Be Realistic:** Don't try to build Rome in a single prompt. Break complex application features into smaller, focused prompts for the AI SDK functions.
+2.  **Be Specific & Over-Explain:** Define _exactly_ what you want and don't want. Ambiguity leads to unpredictable results.
+    <TalladegaNightsImage /> {/* Placeholder for your image component */}
+    *(Don't leave the model wondering what to do with its hands!)*
+
+### **Iteration & The AI SDK Playground**
+
+Tweaking prompts effectively often requires more experimentation than simple inline examples allow. For deeper dives and serious prompt engineering, the official **Vercel AI SDK Playground** is your essential tool. It's a web-based UI specifically designed for prompt engineering, allowing you to:
+
+- Directly test core AI SDK functions like `generateText`, `streamText`, and `generateObject`.
+- **Compare different prompts and models side-by-side.** See exactly how changes impact the output from various providers (e.g., OpenAI vs. Anthropic vs. Google) in parallel.
+- Adjust model parameters like temperature, top-p, and max tokens to fine-tune generation.
+- Save and share your prompt experiments easily.
+
+Think of it as a dedicated lab for refining your prompts and understanding model behavior without needing to constantly modify and run your local application code. It's invaluable for quickly finding the best combination of prompt, model, and settings for your specific task.
+
+➡️ **[Experiment in the AI SDK Playground](https://sdk.vercel.ai/playground)**
+
+<Callout title="Level Up Your Prompting">
+	Take the Chain-of-Thought prompt from above and try it in the Playground. Then, try removing the
+	step-by-step examples (make it zero-shot). Does the model still get the answer right as reliably
+	with different models like `gpt-4o-mini` vs `gpt-4o`? This shows why techniques and model choice
+	matter!
+</Callout>
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+  <h3 className="text-xl font-semibold mb-4">Knowledge Check</h3>
+
+  <div className="space-y-8">
+    <MultipleChoiceQuestion
+      question="Which prompting technique is best suited for teaching the AI a specific output format by showing it examples, especially useful for generateObject?"
+      choices={[
+        { id: "zero", text: "Zero-Shot" },
+        { id: "few", text: "Few-Shot" },
+        { id: "cot", text: "Chain-of-Thought" },
+      ]}
+      correctAnswerId="few"
+      feedback={{
+        correct:
+          "Correct! Few-shot prompting uses examples within the prompt to guide the model towards a specific format, crucial for getting reliable structured output with generateObject.",
+        incorrect:
+          "Think about which technique involves showing examples. This is key for guiding structured output like JSON.",
+      }}
+    />
+
+    <MultipleChoiceQuestion
+      question="When using generateObject with a complex Zod schema requiring calculation or multi-step logic to fill fields, which technique might improve the accuracy of the generated object?"
+      choices={[
+        { id: "zero", text: "Zero-Shot" },
+        { id: "few", text: "Few-Shot (just showing final examples)" },
+        { id: "cot", text: "Chain-of-Thought (in the prompt, even if not in final output)" },
+      ]}
+      correctAnswerId="cot"
+      feedback={{
+        correct:
+          "Correct! Even though generateObject returns the final object, using Chain-of-Thought *within the prompt* can help the model reason through the steps needed to arrive at the correct field values.",
+        incorrect:
+          "Think about how the model arrives at the values for the object. If it requires intermediate steps, how can you help it?",
+      }}
+    />
+
+    <MultipleChoiceQuestion
+      question="True or False: For simple tasks like 'Summarize this text in one sentence,' zero-shot prompting with generateText is often sufficient."
+      choices={[
+        { id: "true", text: "True" },
+        { id: "false", text: "False" },
+      ]}
+      correctAnswerId="true"
+      feedback={{
+        correct:
+          "True! For common, straightforward tasks, models often understand the request without needing explicit examples, making zero-shot a good starting point.",
+        incorrect:
+          "Consider if the model likely encountered summarization tasks during its training. Simple, common tasks often work well with direct requests.",
+      }}
+    />
+
+  </div>
+</div>
+
+<div className="bg-primary/5 border-primary/20 rounded-lg p-6 my-8">
+	<h3 className="text-xl font-semibold mb-4">Reflection Prompt: Prompting for the SDK</h3>
+	<p className="text-lg mb-4">
+		Think about a specific feature you might build using an AI SDK function like `generateText` or
+		`generateObject`. Which prompting technique (Zero-Shot, Few-Shot, CoT) seems most appropriate
+		and why? How would you iterate on your prompt using the inline tool or the Playground if the
+		initial results weren't what you expected?
+	</p>
+	<Textarea placeholder="Type your reflection here..." className="min-h-[150px] w-full" />
+	<Button className="mt-4">Save Reflection</Button>
+</div>
+
+<div className="my-12">
+	<h3 className="text-2xl font-semibold mb-4 border-b pb-2">Further Reading (Optional)</h3>
+	<div className="space-y-4">
+		<div className="p-4 border rounded-lg bg-card">
+			{' '}
+			{/* Assumes basic card styling */}
+			<h4 className="font-medium mb-1">
+				<a
+					href="https://arxiv.org/abs/2406.06608"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-blue-600 hover:underline"
+				>
+					The Prompt Report: A Systematic Survey of Prompt Engineering Techniques
+				</a>
+			</h4>
+			<p className="text-sm text-muted-foreground">
+				Want a <em>deep</em> dive into the vast world of prompt engineering? This comprehensive
+				academic survey categorizes dozens of techniques. Advanced reading if you want to explore
+				beyond the core techniques covered here.
+			</p>
+		</div>
+		<div className="p-4 border rounded-lg bg-card">
+			{' '}
+			{/* Assumes basic card styling */}
+			<h4 className="font-medium mb-1">
+				<a
+					href="https://github.com/vercel/ai-chatbot/blob/main/lib/ai/prompts.ts"
+					target="_blank"
+					rel="noopener noreferrer"
+					className="text-blue-600 hover:underline"
+				>
+					Real-World Prompts: Vercel AI Chatbot Template
+				</a>
+			</h4>
+			<p className="text-sm text-muted-foreground">
+				Explore how prompts are structured and used in a complete application. See examples of
+				system prompts and task-specific instructions in the official Vercel AI Chatbot template.
+				Also check the `artifacts/.../server.ts` files!
+			</p>
+		</div>
+	</div>
+</div>
+
+---
+
+## Next Step: Setting Up Your AI Dev Environment
+
+You've grasped the core prompting techniques - now it's time to prepare your local machine and write your first actual AI script. In this lesson, we'll set up your development environment with the necessary tools and API keys.
+
+The best way to solidify your prompting skills is by building real stuff. Let's get your environment ready so you can go from talking about prompts to implementing them in working code.

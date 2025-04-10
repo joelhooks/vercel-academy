@@ -91,7 +91,7 @@
 	"devDependencies": {
 		"@types/cli-progress": "^3.11.6",
 		"@types/node": "^22.13.9",
-		"@types/react": "19.0.10",
+		"@types/react": "19.0.12",
 		"@types/react-dom": "19.0.4",
 		"@vercelacademy/eslint-config": "workspace:*",
 		"@vercelacademy/typescript-config": "workspace:*",

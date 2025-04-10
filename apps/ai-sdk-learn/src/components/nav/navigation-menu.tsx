@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 import * as NavigationMenuPrimitive from '@radix-ui/react-navigation-menu'
-import { ChevronDownSmall } from '@vercel/geist/icons/chevron-down-small'
+import { ChevronDownSmall } from '@/components/icons/chevron-down-small'
 
 import { cva } from 'class-variance-authority'
 import Link from 'next/link'
